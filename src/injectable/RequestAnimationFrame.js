@@ -1,5 +1,5 @@
 var RequestAnimationFrame = {
-  current: global.requestAnimationFrame,
+  current: cb => global.requestAnimationFrame(cb),
   inject(injected) {
     RequestAnimationFrame.current = injected;
   },
