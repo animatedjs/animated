@@ -1,5 +1,5 @@
 var CancelAnimationFrame = {
-  current: global.cancelAnimationFrame,
+  current: id => global.cancelAnimationFrame(id),
   inject(injected) {
     CancelAnimationFrame.current = injected;
   },
