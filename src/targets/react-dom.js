@@ -13,14 +13,28 @@
 var CSSPropertyOperations = require('react/lib/CSSPropertyOperations');
 var Animated = require('../Animated');
 
+// { scale: 2 } => 'scale(2)'
+function mapTransform(t) {
+  var k = Object.keys(t)[0];
+  return `${k}(${t[k]})`;
+}
+
+// NOTE(lmr):
+// Since this is a hot code path, right now this is mutative...
+// As far as I can tell, this shouldn't cause any unexpected behavior.
+function mapStyle(style) {
+  if (style && style.transform) {
+    // TODO(lmr): this doesn't attempt to use vendor prefixed styles
+    style.transform = style.transform.map(mapTransform).join(' ');
+  }
+  return style;
+}
+
 function ApplyAnimatedValues(instance, props) {
   if (instance.setNativeProps) {
     instance.setNativeProps(props);
-  } else if (instance.getDOMNode) {
-    var node = instance.getDOMNode();
-    if (node.setAttribute) {
-      var strStyle = CSSPropertyOperations.setValueForStyles(node, props.style, instance);
-    }
+  } else if (instance.nodeType && instance.setAttribute !== undefined) {
+    CSSPropertyOperations.setValueForStyles(instance, mapStyle(props.style), instance);
   } else {
     return false;
   }
