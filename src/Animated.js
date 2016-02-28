@@ -1146,7 +1146,7 @@ function createAnimatedComponent(Component: any): any {
 
     setNativeProps(props) {
       var didUpdate = ApplyAnimatedValues.current(this.refs[refName], props);
-      if (shouldUpdate === false) {
+      if (didUpdate === false) {
         this.forceUpdate();
       }
     }
@@ -1166,7 +1166,7 @@ function createAnimatedComponent(Component: any): any {
       // forceUpdate.
       var callback = () => {
         var didUpdate = ApplyAnimatedValues.current(this.refs[refName], this._propsAnimated.__getAnimatedValue());
-        if (shouldUpdate === false) {
+        if (didUpdate === false) {
           this.forceUpdate();
         }
       };
@@ -1718,6 +1718,7 @@ module.exports = {
   createAnimatedComponent,
 
   inject: {
+    ApplyAnimatedValues: ApplyAnimatedValues.inject,
     InteractionManager: InteractionManager.inject,
     FlattenStyle: FlattenStyle.inject,
     RequestAnimationFrame: RequestAnimationFrame.inject,
