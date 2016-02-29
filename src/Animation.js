@@ -15,6 +15,10 @@ export type EndCallback = (result: EndResult) => void;
 export type AnimationConfig = {
   isInteraction?: bool;
 };
+export type CompositeAnimation = {
+  start: (callback?: ?EndCallback) => void;
+  stop: () => void;
+};
 
 // Important note: start() and stop() will only be called at most once.
 // Once an animation has been stopped or finished its course, it will
