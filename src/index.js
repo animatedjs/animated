@@ -19,231 +19,15 @@ var AnimatedAddition = require('./AnimatedAddition');
 var AnimatedMultiplication = require('./AnimatedMultiplication');
 var AnimatedModulo = require('./AnimatedModulo');
 var AnimatedTracking = require('./AnimatedTracking');
+var AnimatedShape = require('./AnimatedShape');
 
-var Animation = require('./Animation');
-var TimingAnimation = require('./TimingAnimation');
-var DecayAnimation = require('./DecayAnimation');
-var SpringAnimation = require('./SpringAnimation');
+var spring = require('./spring');
+var timing = require('./timing');
+var decay = require('./decay');
+var sequence = require('./sequence');
+var parallel = require('./parallel');
 
-import type { InterpolationConfigType } from './Interpolation';
-import type { AnimationConfig, EndResult, EndCallback } from './Animation';
-
-type TimingAnimationConfig =  AnimationConfig & {
-  toValue: number | AnimatedValue | {x: number, y: number} | AnimatedValueXY;
-  easing?: (value: number) => number;
-  duration?: number;
-  delay?: number;
-};
-
-type DecayAnimationConfig = AnimationConfig & {
-  velocity: number | {x: number, y: number};
-  deceleration?: number;
-};
-
-type SpringAnimationConfig = AnimationConfig & {
-  toValue: number | AnimatedValue | {x: number, y: number} | AnimatedValueXY;
-  overshootClamping?: bool;
-  restDisplacementThreshold?: number;
-  restSpeedThreshold?: number;
-  velocity?: number | {x: number, y: number};
-  bounciness?: number;
-  speed?: number;
-  tension?: number;
-  friction?: number;
-};
-
-type CompositeAnimation = {
-  start: (callback?: ?EndCallback) => void;
-  stop: () => void;
-};
-
-var maybeVectorAnim = function(
-  value: AnimatedValue | AnimatedValueXY,
-  config: Object,
-  anim: (value: AnimatedValue, config: Object) => CompositeAnimation
-): ?CompositeAnimation {
-  if (value instanceof AnimatedValueXY) {
-    var configX = {...config};
-    var configY = {...config};
-    for (var key in config) {
-      var {x, y} = config[key];
-      if (x !== undefined && y !== undefined) {
-        configX[key] = x;
-        configY[key] = y;
-      }
-    }
-    var aX = anim((value: AnimatedValueXY).x, configX);
-    var aY = anim((value: AnimatedValueXY).y, configY);
-    // We use `stopTogether: false` here because otherwise tracking will break
-    // because the second animation will get stopped before it can update.
-    return parallel([aX, aY], {stopTogether: false});
-  }
-  return null;
-};
-
-var spring = function(
-  value: AnimatedValue | AnimatedValueXY,
-  config: SpringAnimationConfig,
-): CompositeAnimation {
-  return maybeVectorAnim(value, config, spring) || {
-    start: function(callback?: ?EndCallback): void {
-      var singleValue: any = value;
-      var singleConfig: any = config;
-      singleValue.stopTracking();
-      if (config.toValue instanceof Animated) {
-        singleValue.track(new AnimatedTracking(
-          singleValue,
-          config.toValue,
-          SpringAnimation,
-          singleConfig,
-          callback
-        ));
-      } else {
-        singleValue.animate(new SpringAnimation(singleConfig), callback);
-      }
-    },
-
-    stop: function(): void {
-      value.stopAnimation();
-    },
-  };
-};
-
-var timing = function(
-  value: AnimatedValue | AnimatedValueXY,
-  config: TimingAnimationConfig,
-): CompositeAnimation {
-  return maybeVectorAnim(value, config, timing) || {
-    start: function(callback?: ?EndCallback): void {
-      var singleValue: any = value;
-      var singleConfig: any = config;
-      singleValue.stopTracking();
-      if (config.toValue instanceof Animated) {
-        singleValue.track(new AnimatedTracking(
-          singleValue,
-          config.toValue,
-          TimingAnimation,
-          singleConfig,
-          callback
-        ));
-      } else {
-        singleValue.animate(new TimingAnimation(singleConfig), callback);
-      }
-    },
-
-    stop: function(): void {
-      value.stopAnimation();
-    },
-  };
-};
-
-var decay = function(
-  value: AnimatedValue | AnimatedValueXY,
-  config: DecayAnimationConfig,
-): CompositeAnimation {
-  return maybeVectorAnim(value, config, decay) || {
-    start: function(callback?: ?EndCallback): void {
-      var singleValue: any = value;
-      var singleConfig: any = config;
-      singleValue.stopTracking();
-      singleValue.animate(new DecayAnimation(singleConfig), callback);
-    },
-
-    stop: function(): void {
-      value.stopAnimation();
-    },
-  };
-};
-
-var sequence = function(
-  animations: Array<CompositeAnimation>,
-): CompositeAnimation {
-  var current = 0;
-  return {
-    start: function(callback?: ?EndCallback) {
-      var onComplete = function(result) {
-        if (!result.finished) {
-          callback && callback(result);
-          return;
-        }
-
-        current++;
-
-        if (current === animations.length) {
-          callback && callback(result);
-          return;
-        }
-
-        animations[current].start(onComplete);
-      };
-
-      if (animations.length === 0) {
-        callback && callback({finished: true});
-      } else {
-        animations[current].start(onComplete);
-      }
-    },
-
-    stop: function() {
-      if (current < animations.length) {
-        animations[current].stop();
-      }
-    }
-  };
-};
-
-type ParallelConfig = {
-  stopTogether?: bool; // If one is stopped, stop all.  default: true
-}
-var parallel = function(
-  animations: Array<CompositeAnimation>,
-  config?: ?ParallelConfig,
-): CompositeAnimation {
-  var doneCount = 0;
-  // Make sure we only call stop() at most once for each animation
-  var hasEnded = {};
-  var stopTogether = !(config && config.stopTogether === false);
-
-  var result = {
-    start: function(callback?: ?EndCallback) {
-      if (doneCount === animations.length) {
-        callback && callback({finished: true});
-        return;
-      }
-
-      animations.forEach((animation, idx) => {
-        var cb = function(endResult) {
-          hasEnded[idx] = true;
-          doneCount++;
-          if (doneCount === animations.length) {
-            doneCount = 0;
-            callback && callback(endResult);
-            return;
-          }
-
-          if (!endResult.finished && stopTogether) {
-            result.stop();
-          }
-        };
-
-        if (!animation) {
-          cb({finished: true});
-        } else {
-          animation.start(cb);
-        }
-      });
-    },
-
-    stop: function(): void {
-      animations.forEach((animation, idx) => {
-        !hasEnded[idx] && animation.stop();
-        hasEnded[idx] = true;
-      });
-    }
-  };
-
-  return result;
-};
+import type { CompositeAnimation } from './Animation';
 
 var delay = function(time: number): CompositeAnimation {
   // Would be nice to make a specialized implementation
@@ -400,6 +184,11 @@ module.exports = {
    * 2D value class for driving 2D animations, such as pan gestures.
    */
   ValueXY: AnimatedValueXY,
+
+  /**
+   * Animated Value that supports shapes of nested AnimatedValues
+   */
+  Shape: AnimatedShape,
 
   /**
    * Animates a value from an initial velocity to zero based on a decay
