@@ -5,7 +5,9 @@
   "main": "lib/Animated.js",
   "scripts": {
     "prepublish": "npm run build",
-    "build": "babel src --out-dir lib",
+    "build": "npm run build:lib && npm run build:interactive-docs",
+    "build:lib": "babel src --out-dir lib",
+    "build:interactive-docs": "browserify -e examples/interactive-docs/example.js -o examples/interactive-docs/example.bundle.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -41,6 +43,7 @@
     "babel-preset-es2015": "^6.5.0",
     "babel-preset-react": "^6.5.0",
     "babel-preset-react-native": "^1.4.0",
+    "browserify": "^13.0.0",
     "react": "^0.14.7"
   }
 }
