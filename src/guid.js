@@ -10,11 +10,8 @@
  */
 'use strict';
 
-var CancelAnimationFrame = {
-  current: id => global.cancelAnimationFrame(id),
-  inject(injected) {
-    CancelAnimationFrame.current = injected;
-  },
-};
+var _uniqueId = 0;
 
-module.exports = CancelAnimationFrame;
+module.exports = function uniqueId(): string {
+  return String(_uniqueId++);
+};

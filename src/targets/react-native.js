@@ -9,8 +9,9 @@
  * @flow
  */
 'use strict';
+
 var { View, Image, Text } = require('react-native');
-var Animated = require('../Animated');
+var Animated = require('../');
 
 // TODO(lmr): inject flattenStyle
 // TODO(lmr): inject InteractionManager
