@@ -186,6 +186,11 @@ module.exports = {
   ValueXY: AnimatedValueXY,
 
   /**
+   * Animated Value that supports shapes of nested AnimatedValues
+   */
+  Shape: AnimatedShape,
+
+  /**
    * Animates a value from an initial velocity to zero based on a decay
    * coefficient.
    */
