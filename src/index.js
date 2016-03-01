@@ -19,6 +19,7 @@ var AnimatedAddition = require('./AnimatedAddition');
 var AnimatedMultiplication = require('./AnimatedMultiplication');
 var AnimatedModulo = require('./AnimatedModulo');
 var AnimatedTracking = require('./AnimatedTracking');
+var isAnimated = require('./isAnimated');
 
 var Animation = require('./Animation');
 var TimingAnimation = require('./TimingAnimation');
@@ -479,6 +480,12 @@ module.exports = {
    *```
    */
   event,
+
+  /**
+   * Existential test to figure out if an object is an instance of the Animated
+   * class or not.
+   */
+  isAnimated,
 
   /**
    * Make any React component Animatable.  Used to create `Animated.View`, etc.
