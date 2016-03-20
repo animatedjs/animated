@@ -100,21 +100,13 @@ class Easing {
   }
 
   static bezier(
-    x1: number,
-    y1: number,
-    x2: number,
-    y2: number,
-    epsilon?: ?number,
-  ): (t: number) => number {
-    if (epsilon === undefined) {
-      // epsilon determines the precision of the solved values
-      // a good approximation is:
-      var duration = 500; // duration of animation in milliseconds.
-      epsilon = (1000 / 60 / duration) / 4;
+      x1: number,
+      y1: number,
+      x2: number,
+      y2: number
+    ): (t: number) => number {
+      return _bezier(x1, y1, x2, y2);
     }
-
-    return _bezier(x1, y1, x2, y2, epsilon);
-  }
 
   static in(
     easing: (t: number) => number,
