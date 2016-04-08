@@ -34,7 +34,7 @@ function ApplyAnimatedValues(instance, props) {
   if (instance.setNativeProps) {
     instance.setNativeProps(props);
   } else if (instance.nodeType && instance.setAttribute !== undefined) {
-    CSSPropertyOperations.setValueForStyles(instance, mapStyle(props.style), instance);
+    CSSPropertyOperations.setValueForStyles(instance, mapStyle(props.style));
   } else {
     return false;
   }
