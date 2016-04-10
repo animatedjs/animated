@@ -1,10 +1,10 @@
 {
   "name": "animated",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "description": "Declarative Animations Library for React and React Native",
   "main": "lib/Animated.js",
   "scripts": {
-    "prepublish": "npm run build",
+    "prepublish": "npm run build:lib",
     "build": "npm run build:lib && npm run build:interactive-docs",
     "build:lib": "babel src --out-dir lib",
     "build:interactive-docs": "browserify -e examples/interactive-docs/example.js -o examples/interactive-docs/example.bundle.js",
