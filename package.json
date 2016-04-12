@@ -1,6 +1,6 @@
 {
   "name": "animated",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Declarative Animations Library for React and React Native",
   "main": "lib/index.js",
   "scripts": {
