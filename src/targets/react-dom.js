@@ -16,7 +16,11 @@ var Animated = require('../');
 // { scale: 2 } => 'scale(2)'
 function mapTransform(t) {
   var k = Object.keys(t)[0];
-  return `${k}(${t[k]})`;
+  if (k === 'translateX' || k === 'translateY') {
+    return k+'('+t[k]+'px)';
+  } else {
+    return k+'('+t[k]+')';
+  }
 }
 
 // NOTE(lmr):
