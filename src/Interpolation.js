@@ -11,7 +11,7 @@
 /* eslint no-bitwise: 0 */
 'use strict';
 
-// var normalizeColor = require('normalizeColor');
+ var normalizeColor = require('./normalizeColor');
 
 var invariant = require('invariant');
 
@@ -157,21 +157,21 @@ function interpolate(
   return result;
 }
 
-// function colorToRgba(input: string): string {
-//   var int32Color = normalizeColor(input);
-//   if (int32Color === null) {
-//     return input;
-//   }
-//
-//   int32Color = int32Color || 0; // $FlowIssue
-//
-//   var r = (int32Color & 0xff000000) >>> 24;
-//   var g = (int32Color & 0x00ff0000) >>> 16;
-//   var b = (int32Color & 0x0000ff00) >>> 8;
-//   var a = (int32Color & 0x000000ff) / 255;
-//
-//   return `rgba(${r}, ${g}, ${b}, ${a})`;
-// }
+function colorToRgba(input: string): string {
+  var int32Color = normalizeColor(input);
+  if (int32Color === null) {
+   return input;
+  }
+
+  int32Color = int32Color || 0; // $FlowIssue
+
+  var r = (int32Color & 0xff000000) >>> 24;
+  var g = (int32Color & 0x00ff0000) >>> 16;
+  var b = (int32Color & 0x0000ff00) >>> 8;
+  var a = (int32Color & 0x000000ff) / 255;
+
+  return `rgba(${r}, ${g}, ${b}, ${a})`;
+}
 
 var stringShapeRegex = /[0-9\.-]+/g;
 
@@ -188,7 +188,7 @@ function createInterpolationFromStringOutputRange(
 ): (input: number) => string {
   var outputRange: Array<string> = (config.outputRange: any);
   invariant(outputRange.length >= 2, 'Bad output range');
-  // outputRange = outputRange.map(colorToRgba);
+  outputRange = outputRange.map(colorToRgba);
   checkPattern(outputRange);
 
   // ['rgba(0, 100, 200, 0)', 'rgba(50, 150, 250, 0.5)']
