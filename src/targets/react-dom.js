@@ -23,7 +23,7 @@ function mapTransform(t) {
 // Since this is a hot code path, right now this is mutative...
 // As far as I can tell, this shouldn't cause any unexpected behavior.
 function mapStyle(style) {
-  if (style && style.transform) {
+  if (style && style.transform && typeof style.transform !== 'string') {
     // TODO(lmr): this doesn't attempt to use vendor prefixed styles
     style.transform = style.transform.map(mapTransform).join(' ');
   }
