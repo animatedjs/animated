@@ -21,7 +21,7 @@ class AnimatedStyle extends AnimatedWithChildren {
   constructor(style: any) {
     super();
     style = FlattenStyle.current(style) || {};
-    if (style.transform) {
+    if (style.transform && !(style.transform instanceof Animated)) {
       style = {
         ...style,
         transform: new AnimatedTransform(style.transform),
