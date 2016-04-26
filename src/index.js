@@ -18,6 +18,7 @@ var AnimatedValueXY = require('./AnimatedValueXY');
 var AnimatedAddition = require('./AnimatedAddition');
 var AnimatedMultiplication = require('./AnimatedMultiplication');
 var AnimatedModulo = require('./AnimatedModulo');
+var AnimatedTemplate = require('./AnimatedTemplate');
 var AnimatedTracking = require('./AnimatedTracking');
 var isAnimated = require('./isAnimated');
 
@@ -439,6 +440,14 @@ module.exports = {
    */
   modulo: function modulo(a: Animated, modulus: number): AnimatedModulo {
     return new AnimatedModulo(a, modulus);
+  },
+
+  /**
+   * Creates a new Animated value that is the specified string, with each
+   * substitution expression being separately animated and interpolated.
+   */
+  template: function template(strings, ...values) {
+    return new AnimatedTemplate(strings, values);
   },
 
   /**

@@ -10,13 +10,9 @@
 
 jest
   .autoMockOff()
-  .setMock('Text', {})
-  .setMock('View', {})
-  .setMock('Image', {})
-  .setMock('React', {Component: class {}});
 
-var Animated = require('Animated');
-
+var Animated = require('../index');
+/*
 describe('Animated', () => {
 
   it('works end to end', () => {
@@ -354,15 +350,15 @@ describe('Animated Events', () => {
 });
 
 describe('Animated Interactions', () => {
-  /*eslint-disable no-shadow*/
+  /*eslint-disable no-shadow
   var Animated;
-  /*eslint-enable*/
+  /*eslint-enable
   var InteractionManager;
 
   beforeEach(() => {
     jest.mock('InteractionManager');
-    Animated = require('Animated');
-    InteractionManager = require('InteractionManager');
+    Animated = require('../index');
+    InteractionManager = require('../InteractionManager');
   });
 
   afterEach(()=> {
@@ -400,7 +396,36 @@ describe('Animated Interactions', () => {
     expect(callback).toBeCalledWith({finished: true});
   });
 });
-
+*/
+describe('Animated Templates', () => {
+  it('works with fully literal template string', () => {
+    var template = Animated.template `width: 100px`;
+    expect(template.__getValue()).toBe('width: 100px');
+  });
+  it('works with literal template that uses static values', () => {
+    var value = 42;
+    var template = Animated.template `width: ${value}px; height: ${value}px`;
+    expect(template.__getValue()).toBe('width: 42px; height: 42px');
+  });
+  it('works with literal template that uses Animated values', () => {
+    var value = new Animated.Value(42);
+    var template = Animated.template `width: ${value}px; height: ${value}px`;
+    expect(template.__getValue()).toBe('width: 42px; height: 42px');
+    value.setValue(13);
+    expect(template.__getValue()).toBe('width: 13px; height: 13px');
+  });
+  it('works with multiple different Animated values', () => {
+    var value1 = new Animated.Value(42);
+    var value2 = new Animated.Value(13);
+    var template = Animated.template `width: ${value1}px; height: ${value2}px`;
+    expect(template.__getValue()).toBe('width: 42px; height: 13px');
+    value1.setValue(21);
+    expect(template.__getValue()).toBe('width: 21px; height: 13px');
+    value2.setValue(66);
+    expect(template.__getValue()).toBe('width: 21px; height: 66px');
+  });
+});
+/*
 describe('Animated Tracking', () => {
   it('should track values', () => {
     var value1 = new Animated.Value(0);
@@ -564,3 +589,4 @@ describe('Animated Listeners', () => {
     expect(listener.mock.calls.length).toBe(4);
   });
 });
+*/
