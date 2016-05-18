@@ -7,6 +7,7 @@
     "prepublish": "npm run build:lib",
     "build": "npm run build:lib && npm run build:interactive-docs",
     "build:lib": "babel src --out-dir lib",
+    "build:watch": "npm run build:lib -- --watch",
     "build:interactive-docs": "browserify -e examples/interactive-docs/example.js -o examples/interactive-docs/example.bundle.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
