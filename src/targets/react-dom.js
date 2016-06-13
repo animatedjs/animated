@@ -30,11 +30,11 @@ function mapStyle(style) {
   return style;
 }
 
-function ApplyAnimatedValues(instance, props) {
+function ApplyAnimatedValues(instance, props, comp) {
   if (instance.setNativeProps) {
     instance.setNativeProps(props);
   } else if (instance.nodeType && instance.setAttribute !== undefined) {
-    CSSPropertyOperations.setValueForStyles(instance, mapStyle(props.style));
+    CSSPropertyOperations.setValueForStyles(instance, mapStyle(props.style), comp._reactInternalInstance);
   } else {
     return false;
   }
