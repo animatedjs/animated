@@ -41,7 +41,7 @@ class AnimatedInterpolation extends AnimatedWithChildren {
   }
 
   addListener(callback: ValueListenerCallback): string {
-    if (!this._parentListener) {
+    if (!this._parentListener && this._parent.addListener) {
       this._parentListener = this._parent.addListener(() => {
         for (var key in this._listeners) {
           this._listeners[key]({value: this.__getValue()});
@@ -67,7 +67,9 @@ class AnimatedInterpolation extends AnimatedWithChildren {
 
   __detach(): void {
     this._parent.__removeChild(this);
-    this._parentListener = this._parent.removeListener(this._parentListener);
+    if (this._parent.removeListener) {
+      this._parentListener = this._parent.removeListener(this._parentListener);
+    }
   }
 }
 
