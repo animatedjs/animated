@@ -28,9 +28,8 @@
   },
   "homepage": "https://github.com/animatedjs/animated#readme",
   "dependencies": {
-    "es6-set": "^0.1.4",
     "invariant": "^2.2.0",
-    "tinycolor": "0.0.1"
+    "normalize-css-color": "^1.0.1"
   },
   "peerDependencies": {
     "react": "*",
