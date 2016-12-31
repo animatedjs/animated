@@ -21,15 +21,43 @@ import type { InterpolationConfigType } from './Interpolation';
 class AnimatedMultiplication extends AnimatedWithChildren {
   _a: Animated;
   _b: Animated;
+  _aListener: number;
+  _bListener: number;
+  _listeners: {[key: number]: ValueListenerCallback};
 
   constructor(a: Animated | number, b: Animated | number) {
     super();
     this._a = typeof a === 'number' ? new AnimatedValue(a) : a;
     this._b = typeof b === 'number' ? new AnimatedValue(b) : b;
+    this._listeners = {};
   }
 
   __getValue(): number {
     return this._a.__getValue() * this._b.__getValue();
+  }
+
+  addListener(callback: ValueListenerCallback): string {
+    if (!this._aListener && this._a.addListener) {
+      this._aListener = this._a.addListener(() => {
+        for (var key in this._listeners) {
+          this._listeners[key]({value: this.__getValue()});
+        }
+      })
+    }
+    if (!this._bListener && this._b.addListener) {
+      this._bListener = this._b.addListener(() => {
+        for (var key in this._listeners) {
+          this._listeners[key]({value: this.__getValue()});
+        }
+      })
+    }
+    var id = guid();
+    this._listeners[id] = callback;
+    return id;
+  }
+
+  removeListener(id: string): void {
+    delete this._listeners[id];
   }
 
   interpolate(config: InterpolationConfigType): AnimatedInterpolation {
