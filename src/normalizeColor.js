@@ -26,8 +26,8 @@ if ((match = matchers.hex6.exec(color))) {
   return parseInt(match[1] + 'ff', 16) >>> 0;
 }
 
-if (names.hasOwnProperty(color)) {
-  return names[color];
+if (colorNames.hasOwnProperty(color)) {
+  return colorNames[color];
 }
 
 if ((match = matchers.rgb.exec(color))) {
@@ -189,7 +189,7 @@ function parsePercentage(str: string): number {
   return int / 100;
 }
 
-var names = {
+var colorNames = {
   transparent: 0x00000000,
 
   // http://www.w3.org/TR/css3-color/#svg-color
@@ -345,3 +345,4 @@ var names = {
 };
 
 module.exports = normalizeColor;
+module.exports.colorNames = colorNames;
