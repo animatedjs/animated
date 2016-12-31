@@ -11,7 +11,7 @@
 /* eslint no-bitwise: 0 */
 'use strict';
 
- var normalizeColor = require('./normalizeColor');
+var normalizeColor = require('normalize-css-color');
 
 var invariant = require('invariant');
 

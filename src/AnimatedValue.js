@@ -16,7 +16,7 @@ var AnimatedInterpolation = require('./AnimatedInterpolation');
 var Interpolation = require('./Interpolation');
 var Animation = require('./Animation');
 var guid = require('./guid');
-var Set = require('es6-set');
+var Set = global.Set || require('./SetPolyfill');
 
 import type { EndCallback } from './Animation';
 import type { InterpolationConfigType } from './Interpolation';
