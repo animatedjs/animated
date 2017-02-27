@@ -138,8 +138,4 @@ class Easing {
   }
 }
 
-var ease = Easing.bezier(0.42, 0, 1, 1);
-
-
-
 module.exports = Easing;
