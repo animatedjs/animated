@@ -8,13 +8,12 @@
  *
  * @flow
  */
-'use strict';
 
-var FlattenStyle = {
-  current: style => style,
-  inject(flatten) {
+const FlattenStyle = {
+  current: (style: Object) => style,
+  inject(flatten: Function) {
     FlattenStyle.current = flatten;
   },
 };
 
-module.exports = FlattenStyle;
+export default FlattenStyle;

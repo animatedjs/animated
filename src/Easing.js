@@ -8,25 +8,28 @@
  *
  * @flow
  */
-'use strict';
+import bezier from './bezier';
 
-var _bezier = require('./bezier');
+type Callback = (t: number) => number;
+
+const {PI, pow, cos, sqrt} = Math;
+const ease = bezier(0.42, 0, 1, 1);
 
 /**
  * This class implements common easing functions. The math is pretty obscure,
  * but this cool website has nice visual illustrations of what they represent:
  * http://xaedes.de/dev/transitions/
  */
-class Easing {
-  static step0(n) {
+export default class Easing {
+  static step0(n: number): number {
     return n > 0 ? 1 : 0;
   }
 
-  static step1(n) {
+  static step1(n: number): number {
     return n >= 1 ? 1 : 0;
   }
 
-  static linear(t) {
+  static linear(t: number): number {
     return t;
   }
 
@@ -34,28 +37,28 @@ class Easing {
     return ease(t);
   }
 
-  static quad(t) {
+  static quad(t: number): number {
     return t * t;
   }
 
-  static cubic(t) {
+  static cubic(t: number): number {
     return t * t * t;
   }
 
-  static poly(n) {
-    return (t) => Math.pow(t, n);
+  static poly(n: number): Callback {
+    return t => pow(t, n);
   }
 
-  static sin(t) {
-    return 1 - Math.cos(t * Math.PI / 2);
+  static sin(t: number): number {
+    return 1 - cos(t * PI / 2);
   }
 
-  static circle(t) {
-    return 1 - Math.sqrt(1 - t * t);
+  static circle(t: number): number {
+    return 1 - sqrt(1 - t * t);
   }
 
-  static exp(t) {
-    return Math.pow(2, 10 * (t - 1));
+  static exp(t: number): number {
+    return pow(2, 10 * (t - 1));
   }
 
   /**
@@ -68,15 +71,13 @@ class Easing {
    *   http://tiny.cc/elastic_b_1 (default bounciness = 1)
    *   http://tiny.cc/elastic_b_3 (bounciness = 3)
    */
-  static elastic(bounciness: number = 1): (t: number) => number {
-    var p = bounciness * Math.PI;
-    return (t) => 1 - Math.pow(Math.cos(t * Math.PI / 2), 3) * Math.cos(t * p);
+  static elastic(bounciness: number = 1): Callback {
+    const p = bounciness * PI;
+
+    return t => 1 - pow(cos(t * PI / 2), 3) * cos(t * p);
   }
 
-  static back(s: number): (t: number) => number {
-    if (s === undefined) {
-      s = 1.70158;
-    }
+  static back(s: number = 1.70158): Callback {
     return (t) => t * t * ((s + 1) * t - s);
   }
 
@@ -99,47 +100,31 @@ class Easing {
     return 7.5625 * t * t + 0.984375;
   }
 
-  static bezier(
-      x1: number,
-      y1: number,
-      x2: number,
-      y2: number
-    ): (t: number) => number {
-      return _bezier(x1, y1, x2, y2);
-    }
+  static bezier(x1: number,y1: number,x2: number,y2: number): Callback {
+    return bezier(x1, y1, x2, y2);
+  }
 
-  static in(
-    easing: (t: number) => number,
-  ): (t: number) => number {
+  static in(easing: Callback): Callback {
     return easing;
   }
 
   /**
    * Runs an easing function backwards.
    */
-  static out(
-    easing: (t: number) => number,
-  ): (t: number) => number {
-    return (t) => 1 - easing(1 - t);
+  static out(easing: Callback): Callback {
+    return t => 1 - easing(1 - t);
   }
 
   /**
    * Makes any easing function symmetrical.
    */
-  static inOut(
-    easing: (t: number) => number,
-  ): (t: number) => number {
-    return (t) => {
+  static inOut(easing: Callback,): Callback {
+    return t => {
       if (t < 0.5) {
         return easing(t * 2) / 2;
       }
+
       return 1 - easing((1 - t) * 2) / 2;
     };
   }
 }
-
-var ease = Easing.bezier(0.42, 0, 1, 1);
-
-
-
-module.exports = Easing;

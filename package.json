@@ -5,6 +5,7 @@
   "main": "lib/index.js",
   "scripts": {
     "prepublish": "npm run build:lib",
+    "debug": "npm run build:lib -- --source-maps inline && npm run build:interactive-docs -- --debug",
     "build": "npm run build:lib && npm run build:interactive-docs",
     "build:lib": "babel src --out-dir lib",
     "build:watch": "npm run build:lib -- --watch",

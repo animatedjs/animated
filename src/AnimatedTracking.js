@@ -8,38 +8,41 @@
  *
  * @flow
  */
-'use strict';
 
-var Animated = require('./Animated');
-var AnimatedValue = require('./AnimatedValue');
+import { IAnimated, IAnimatedWithChildren } from './Animated';
+import AnimatedValue from './AnimatedValue';
 
-import type { EndCallback } from './Animated';
+import type { EndCallback } from './Animation';
 
-class AnimatedTracking extends Animated {
+export default class AnimatedTracking implements IAnimated {
   _value: AnimatedValue;
-  _parent: Animated;
+  _parent: IAnimatedWithChildren;
   _callback: ?EndCallback;
-  _animationConfig: Object;
   _animationClass: any;
+  _animationConfig: Object;
 
   constructor(
     value: AnimatedValue,
-    parent: Animated,
+    parent: IAnimatedWithChildren,
     animationClass: any,
     animationConfig: Object,
     callback?: ?EndCallback,
   ) {
-    super();
     this._value = value;
     this._parent = parent;
     this._animationClass = animationClass;
     this._animationConfig = animationConfig;
     this._callback = callback;
+    
     this.__attach();
   }
 
   __getValue(): Object {
     return this._parent.__getValue();
+  }
+
+  __getAnimatedValue(): Object {
+    return this._parent.__getAnimatedValue();
   }
 
   __attach(): void {
@@ -53,9 +56,7 @@ class AnimatedTracking extends Animated {
   update(): void {
     this._value.animate(new this._animationClass({
       ...this._animationConfig,
-      toValue: (this._animationConfig.toValue: any).__getValue(),
+      toValue: this._animationConfig.toValue.__getValue(),
     }), this._callback);
   }
 }
-
-module.exports = AnimatedTracking;

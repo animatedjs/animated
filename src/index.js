@@ -8,27 +8,37 @@
  *
  * @flow
  */
-'use strict';
 
-var invariant = require('invariant');
+import invariant from 'invariant';
 
-var Animated = require('./Animated');
-var AnimatedValue = require('./AnimatedValue');
-var AnimatedValueXY = require('./AnimatedValueXY');
-var AnimatedAddition = require('./AnimatedAddition');
-var AnimatedMultiplication = require('./AnimatedMultiplication');
-var AnimatedModulo = require('./AnimatedModulo');
-var AnimatedTemplate = require('./AnimatedTemplate');
-var AnimatedTracking = require('./AnimatedTracking');
-var isAnimated = require('./isAnimated');
+import isAnimated from './isAnimated';
+import AnimatedProps from './AnimatedProps';
+import AnimatedValue from './AnimatedValue';
+import AnimatedModulo from './AnimatedModulo';
+import AnimatedValueXY from './AnimatedValueXY';
+import AnimatedAddition from './AnimatedAddition';
+import AnimatedTemplate from './AnimatedTemplate';
+import AnimatedTracking from './AnimatedTracking';
+import AnimatedWithChildren from './AnimatedWithChildren';
+import AnimatedMultiplication from './AnimatedMultiplication';
 
-var Animation = require('./Animation');
-var TimingAnimation = require('./TimingAnimation');
-var DecayAnimation = require('./DecayAnimation');
-var SpringAnimation = require('./SpringAnimation');
+import Animation from './Animation';
+import DecayAnimation from './DecayAnimation';
+import SpringAnimation from './SpringAnimation';
+import TimingAnimation from './TimingAnimation';
+
+import createAnimatedComponent from './createAnimatedComponent';
+
+import FlattenStyle from '././injectable/FlattenStyle';
+import InteractionManager from '././injectable/InteractionManager';
+import ApplyAnimatedValues from '././injectable/ApplyAnimatedValues';
+import CancelAnimationFrame from '././injectable/CancelAnimationFrame';
+import RequestAnimationFrame from '././injectable/RequestAnimationFrame';
 
 import type { InterpolationConfigType } from './Interpolation';
 import type { AnimationConfig, EndResult, EndCallback } from './Animation';
+
+type AValueOrAValueXY = AnimatedValue | AnimatedValueXY;
 
 type TimingAnimationConfig =  AnimationConfig & {
   toValue: number | AnimatedValue | {x: number, y: number} | AnimatedValueXY;
@@ -59,40 +69,58 @@ type CompositeAnimation = {
   stop: () => void;
 };
 
-var maybeVectorAnim = function(
-  value: AnimatedValue | AnimatedValueXY,
-  config: Object,
-  anim: (value: AnimatedValue, config: Object) => CompositeAnimation
-): ?CompositeAnimation {
+type MaybeVectorAnim = (value: AnimatedValue, config: Object) => CompositeAnimation;
+
+type ParallelConfig = {
+  stopTogether?: bool; // If one is stopped, stop all.  default: true
+}
+
+type Mapping = {[key: string]: Mapping} | AnimatedValue;
+
+type EventConfig = {listener?: ?Function};
+
+export function maybeVectorAnim(value: AValueOrAValueXY, config: Object, anim: MaybeVectorAnim): ?CompositeAnimation {
   if (value instanceof AnimatedValueXY) {
-    var configX = {...config};
-    var configY = {...config};
-    for (var key in config) {
-      var {x, y} = config[key];
-      if (x !== undefined && y !== undefined) {
-        configX[key] = x;
-        configY[key] = y;
+    const configX = {...config};
+    const configY = {...config};
+
+    for (const key in config) {
+      if (config.hasOwnProperty(key)) {
+        const {x, y} = config[key];
+
+        if (x !== undefined && y !== undefined) {
+          configX[key] = x;
+          configY[key] = y;
+        }
       }
     }
-    var aX = anim((value: AnimatedValueXY).x, configX);
-    var aY = anim((value: AnimatedValueXY).y, configY);
+
+    const aX = anim((value: AnimatedValueXY).x, configX);
+    const aY = anim((value: AnimatedValueXY).y, configY);
+
     // We use `stopTogether: false` here because otherwise tracking will break
     // because the second animation will get stopped before it can update.
     return parallel([aX, aY], {stopTogether: false});
   }
+
   return null;
 };
 
-var spring = function(
-  value: AnimatedValue | AnimatedValueXY,
-  config: SpringAnimationConfig,
-): CompositeAnimation {
-  return maybeVectorAnim(value, config, spring) || {
-    start: function(callback?: ?EndCallback): void {
-      var singleValue: any = value;
-      var singleConfig: any = config;
+export function spring(value: AValueOrAValueXY, config: SpringAnimationConfig): CompositeAnimation {
+  const vectorAnim = maybeVectorAnim(value, config, spring);
+
+  if (vectorAnim) {
+    return vectorAnim;
+  }
+
+  return {
+    start(callback?: ?EndCallback) {
+      const singleValue: any = value;
+      const singleConfig: any = config;
+
       singleValue.stopTracking();
-      if (config.toValue instanceof Animated) {
+
+      if (config.toValue instanceof AnimatedWithChildren) {
         singleValue.track(new AnimatedTracking(
           singleValue,
           config.toValue,
@@ -105,22 +133,27 @@ var spring = function(
       }
     },
 
-    stop: function(): void {
+    stop() {
       value.stopAnimation();
     },
   };
 };
 
-var timing = function(
-  value: AnimatedValue | AnimatedValueXY,
-  config: TimingAnimationConfig,
-): CompositeAnimation {
-  return maybeVectorAnim(value, config, timing) || {
-    start: function(callback?: ?EndCallback): void {
-      var singleValue: any = value;
-      var singleConfig: any = config;
+export function timing(value: AValueOrAValueXY, config: TimingAnimationConfig): CompositeAnimation {
+  const vectorAnim = maybeVectorAnim(value, config, spring);
+
+  if (vectorAnim) {
+    return vectorAnim;
+  }
+
+  return {
+    start(callback?: ?EndCallback) {
+      const singleValue: any = value;
+      const singleConfig: any = config;
+
       singleValue.stopTracking();
-      if (config.toValue instanceof Animated) {
+
+      if (config.toValue instanceof AnimatedWithChildren) {
         singleValue.track(new AnimatedTracking(
           singleValue,
           config.toValue,
@@ -133,37 +166,40 @@ var timing = function(
       }
     },
 
-    stop: function(): void {
+    stop() {
       value.stopAnimation();
     },
   };
 };
 
-var decay = function(
-  value: AnimatedValue | AnimatedValueXY,
-  config: DecayAnimationConfig,
-): CompositeAnimation {
-  return maybeVectorAnim(value, config, decay) || {
-    start: function(callback?: ?EndCallback): void {
-      var singleValue: any = value;
-      var singleConfig: any = config;
+export function decay(value: AValueOrAValueXY, config: DecayAnimationConfig): CompositeAnimation {
+  const vectorAnim = maybeVectorAnim(value, config, spring);
+
+  if (vectorAnim) {
+    return vectorAnim;
+  }
+
+  return {
+    start(callback?: ?EndCallback) {
+      const singleValue: any = value;
+      const singleConfig: any = config;
+
       singleValue.stopTracking();
       singleValue.animate(new DecayAnimation(singleConfig), callback);
     },
 
-    stop: function(): void {
+    stop() {
       value.stopAnimation();
     },
   };
 };
 
-var sequence = function(
-  animations: Array<CompositeAnimation>,
-): CompositeAnimation {
-  var current = 0;
+export function sequence(animations: Array<CompositeAnimation>): CompositeAnimation {
+  let current = 0;
+
   return {
-    start: function(callback?: ?EndCallback) {
-      var onComplete = function(result) {
+    start: (callback?: ?EndCallback): void => {
+      function onComplete(result) {
         if (!result.finished) {
           callback && callback(result);
           return;
@@ -186,7 +222,7 @@ var sequence = function(
       }
     },
 
-    stop: function() {
+    stop: function(): void {
       if (current < animations.length) {
         animations[current].stop();
       }
@@ -194,29 +230,24 @@ var sequence = function(
   };
 };
 
-type ParallelConfig = {
-  stopTogether?: bool; // If one is stopped, stop all.  default: true
-}
-var parallel = function(
-  animations: Array<CompositeAnimation>,
-  config?: ?ParallelConfig,
-): CompositeAnimation {
-  var doneCount = 0;
+export function parallel(animations: Array<CompositeAnimation>, config?: ?ParallelConfig): CompositeAnimation {
+  let doneCount = 0;
   // Make sure we only call stop() at most once for each animation
-  var hasEnded = {};
-  var stopTogether = !(config && config.stopTogether === false);
+  const hasEnded = {};
+  const stopTogether = !(config && config.stopTogether === false);
 
-  var result = {
-    start: function(callback?: ?EndCallback) {
+  return {
+    start(callback?: ?EndCallback) {
       if (doneCount === animations.length) {
         callback && callback({finished: true});
         return;
       }
 
       animations.forEach((animation, idx) => {
-        var cb = function(endResult) {
+        const cb = endResult => {
           hasEnded[idx] = true;
           doneCount++;
+
           if (doneCount === animations.length) {
             doneCount = 0;
             callback && callback(endResult);
@@ -224,7 +255,7 @@ var parallel = function(
           }
 
           if (!endResult.finished && stopTogether) {
-            result.stop();
+            this.stop();
           }
         };
 
@@ -236,71 +267,84 @@ var parallel = function(
       });
     },
 
-    stop: function(): void {
+    stop() {
       animations.forEach((animation, idx) => {
         !hasEnded[idx] && animation.stop();
         hasEnded[idx] = true;
       });
     }
   };
-
-  return result;
 };
 
-var delay = function(time: number): CompositeAnimation {
+export function delay(time: number): CompositeAnimation {
   // Would be nice to make a specialized implementation
   return timing(new AnimatedValue(0), {toValue: 0, delay: time, duration: 0});
 };
 
-var stagger = function(
-  time: number,
-  animations: Array<CompositeAnimation>,
-): CompositeAnimation {
-  return parallel(animations.map((animation, i) => {
-    return sequence([
-      delay(time * i),
-      animation,
-    ]);
-  }));
+export function stagger(time: number, animations: Array<CompositeAnimation>): CompositeAnimation {
+  return parallel(animations.map((animation, i) => sequence([delay(time * i), animation])));
 };
 
-type Mapping = {[key: string]: Mapping} | AnimatedValue;
-
-type EventConfig = {listener?: ?Function};
-var event = function(
-  argMapping: Array<?Mapping>,
-  config?: ?EventConfig,
-): () => void {
-  return function(...args): void {
-    var traverse = function(recMapping, recEvt, key) {
+export function event(argMapping: Array<?Mapping>, config?: ?EventConfig): () => void {
+  return (...args) => {
+    function traverse(recMapping, recEvt, key) {
       if (typeof recEvt === 'number') {
         invariant(
           recMapping instanceof AnimatedValue,
-          'Bad mapping of type ' + typeof recMapping + ' for key ' + key +
-            ', event value must map to AnimatedValue'
+          `Bad mapping of type ${typeof recMapping} for key ${key}, event value must map to AnimatedValue`
         );
+
         recMapping.setValue(recEvt);
         return;
       }
+
       invariant(
         typeof recMapping === 'object',
-        'Bad mapping of type ' + typeof recMapping + ' for key ' + key
+        `Bad mapping of type ${typeof recMapping} for key ${key}`
       );
+
       invariant(
         typeof recEvt === 'object',
-        'Bad event of type ' + typeof recEvt + ' for key ' + key
+        `Bad event of type ${typeof recEvt} for key ${key}`
       );
-      for (var key in recMapping) {
-        traverse(recMapping[key], recEvt[key], key);
+
+      for (const key in recMapping) {
+        if (recMapping.hasOwnProperty(key)) {
+          traverse(recMapping[key], recEvt[key], key);
+        }
       }
-    };
-    argMapping.forEach((mapping, idx) => {
-      traverse(mapping, args[idx], 'arg' + idx);
-    });
+    }
+    
+    argMapping.forEach((mapping, idx) => traverse(mapping, args[idx], `arg${idx}`));
+    
     if (config && config.listener) {
       config.listener.apply(null, args);
     }
   };
+};
+
+export function add(a: AnimatedValue, b: AnimatedValue): AnimatedAddition {
+  return new AnimatedAddition(a, b);
+}
+
+export function multiply(a: AnimatedValue, b: AnimatedValue): AnimatedMultiplication {
+  return new AnimatedMultiplication(a, b);
+}
+
+export function modulo(a: AnimatedValue, modulus: number): AnimatedModulo {
+  return new AnimatedModulo(a, modulus);
+}
+
+export function template(strings: Array<string>, ...values: Array<any>) {
+  return new AnimatedTemplate(strings, values);
+}
+
+export const inject = {
+  FlattenStyle: FlattenStyle.inject,
+  InteractionManager: InteractionManager.inject,
+  ApplyAnimatedValues: ApplyAnimatedValues.inject,
+  CancelAnimationFrame: CancelAnimationFrame.inject,
+  RequestAnimationFrame: RequestAnimationFrame.inject,
 };
 
 /**
@@ -392,7 +436,7 @@ var event = function(
  * limitations, but use it sparingly since it might have performance
  * implications in the future.
  */
-module.exports = {
+export default {
   /**
    * Standard value class for driving animations.  Typically initialized with
    * `new Animated.Value(0);`
@@ -423,32 +467,24 @@ module.exports = {
    * Creates a new Animated value composed from two Animated values added
    * together.
    */
-  add: function add(a: Animated, b: Animated): AnimatedAddition {
-    return new AnimatedAddition(a, b);
-  },
+  add,
   /**
    * Creates a new Animated value composed from two Animated values multiplied
    * together.
    */
-  multiply: function multiply(a: Animated, b: Animated): AnimatedMultiplication {
-    return new AnimatedMultiplication(a, b);
-  },
+  multiply,
 
   /**
    * Creates a new Animated value that is the (non-negative) modulo of the
    * provided Animated value
    */
-  modulo: function modulo(a: Animated, modulus: number): AnimatedModulo {
-    return new AnimatedModulo(a, modulus);
-  },
+  modulo,
 
   /**
    * Creates a new Animated value that is the specified string, with each
    * substitution expression being separately animated and interpolated.
    */
-  template: function template(strings, ...values) {
-    return new AnimatedTemplate(strings, values);
-  },
+  template,
 
   /**
    * Starts an animation after the given delay.
@@ -499,15 +535,9 @@ module.exports = {
   /**
    * Make any React component Animatable.  Used to create `Animated.View`, etc.
    */
-  createAnimatedComponent: require('./createAnimatedComponent'),
+  createAnimatedComponent,
 
-  inject: {
-    ApplyAnimatedValues: require('./injectable/ApplyAnimatedValues').inject,
-    InteractionManager: require('./injectable/InteractionManager').inject,
-    FlattenStyle: require('./injectable/FlattenStyle').inject,
-    RequestAnimationFrame: require('./injectable/RequestAnimationFrame').inject,
-    CancelAnimationFrame: require('./injectable/CancelAnimationFrame').inject,
-  },
+  inject,
 
-  __PropsOnlyForTests: require('./AnimatedProps'),
+  __PropsOnlyForTests: AnimatedProps,
 };

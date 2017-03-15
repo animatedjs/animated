@@ -8,19 +8,18 @@
  *
  * @flow
  */
-'use strict';
 
-var ApplyAnimatedValues = {
-  current: function ApplyAnimatedValues(instance, props) {
+const ApplyAnimatedValues = {
+  current: (instance: Object, props: Object) => {
     if (instance.setNativeProps) {
       instance.setNativeProps(props);
     } else {
       return false;
     }
   },
-  inject(apply) {
+  inject(apply: Function) {
     ApplyAnimatedValues.current = apply;
   },
 };
 
-module.exports = ApplyAnimatedValues;
+export default ApplyAnimatedValues;

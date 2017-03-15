@@ -8,23 +8,23 @@
  *
  * @flow
  */
-'use strict';
 
-var Animated = require('./Animated');
-var AnimatedWithChildren = require('./AnimatedWithChildren');
-var AnimatedInterpolation = require('./AnimatedInterpolation');
-var Interpolation = require('./Interpolation');
+import Interpolation from './Interpolation';
+import AnimatedInterpolation from './AnimatedInterpolation';
+import AnimatedWithListenersAndChildren from './AnimatedWithListenersAndChildren';
 
+import type { ListenerCallback } from './AnimatedWithListenersAndChildren';
 import type { InterpolationConfigType } from './Interpolation';
 
-class AnimatedModulo extends AnimatedWithChildren {
-  _a: Animated;
+export default class AnimatedModulo extends AnimatedWithListenersAndChildren {
+  _a: AnimatedWithListenersAndChildren;
   _modulus: number; // TODO(lmr): Make modulus able to be an animated value
-  _aListener: number;
-  _listeners: {[key: number]: ValueListenerCallback};
+  _aListener: string;
+  _listeners: { [key: string]: ListenerCallback };
 
-  constructor(a: Animated, modulus: number) {
+  constructor(a: AnimatedWithListenersAndChildren, modulus: number) {
     super();
+    
     this._a = a;
     this._modulus = modulus;
     this._listeners = {};
@@ -34,25 +34,12 @@ class AnimatedModulo extends AnimatedWithChildren {
     return (this._a.__getValue() % this._modulus + this._modulus) % this._modulus;
   }
 
-  addListener(callback: ValueListenerCallback): string {
+  addListener(callback: ListenerCallback): string {
     if (!this._aListener) {
-      this._aListener = this._a.addListener(() => {
-        for (var key in this._listeners) {
-          this._listeners[key]({value: this.__getValue()});
-        }
-      })
+      this._aListener = this._a.addListener(this.__handler.bind(this));
     }
-    var id = guid();
-    this._listeners[id] = callback;
-    return id;
-  }
 
-  removeListener(id: string): void {
-    delete this._listeners[id];
-  }
-
-  interpolate(config: InterpolationConfigType): AnimatedInterpolation {
-    return new AnimatedInterpolation(this, Interpolation.create(config));
+    return super.addListener(callback);
   }
 
   __attach(): void {
@@ -63,5 +50,3 @@ class AnimatedModulo extends AnimatedWithChildren {
     this._a.__removeChild(this);
   }
 }
-
-module.exports = AnimatedModulo;

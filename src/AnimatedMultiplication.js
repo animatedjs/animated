@@ -8,60 +8,42 @@
  *
  * @flow
  */
-'use strict';
 
-var AnimatedWithChildren = require('./AnimatedWithChildren');
-var Animated = require('./Animated');
-var AnimatedValue = require('./AnimatedValue');
-var AnimatedInterpolation = require('./AnimatedInterpolation');
-var Interpolation = require('./Interpolation');
+import Interpolation from './Interpolation';
+import AnimatedValue from './AnimatedValue';
+import AnimatedInterpolation from './AnimatedInterpolation';
+import AnimatedWithListenersAndChildren from './AnimatedWithListenersAndChildren';
 
+import type { ListenerCallback } from './AnimatedWithListenersAndChildren';
 import type { InterpolationConfigType } from './Interpolation';
 
-class AnimatedMultiplication extends AnimatedWithChildren {
-  _a: Animated;
-  _b: Animated;
-  _aListener: number;
-  _bListener: number;
-  _listeners: {[key: number]: ValueListenerCallback};
+export default class AnimatedMultiplication extends AnimatedWithListenersAndChildren {
+  _a: AnimatedValue;
+  _b: AnimatedValue;
+  _aListener: string;
+  _bListener: string;
+  _listeners: { [key: string]: ListenerCallback };
 
-  constructor(a: Animated | number, b: Animated | number) {
+  constructor(a: AnimatedValue | number, b: AnimatedValue | number) {
     super();
+
     this._a = typeof a === 'number' ? new AnimatedValue(a) : a;
     this._b = typeof b === 'number' ? new AnimatedValue(b) : b;
-    this._listeners = {};
   }
 
   __getValue(): number {
     return this._a.__getValue() * this._b.__getValue();
   }
 
-  addListener(callback: ValueListenerCallback): string {
+  addListener(callback: ListenerCallback): string {
     if (!this._aListener && this._a.addListener) {
-      this._aListener = this._a.addListener(() => {
-        for (var key in this._listeners) {
-          this._listeners[key]({value: this.__getValue()});
-        }
-      })
+      this._aListener = this._a.addListener(this.__handler.bind(this));
     }
     if (!this._bListener && this._b.addListener) {
-      this._bListener = this._b.addListener(() => {
-        for (var key in this._listeners) {
-          this._listeners[key]({value: this.__getValue()});
-        }
-      })
+      this._bListener = this._b.addListener(this.__handler.bind(this));
     }
-    var id = guid();
-    this._listeners[id] = callback;
-    return id;
-  }
-
-  removeListener(id: string): void {
-    delete this._listeners[id];
-  }
-
-  interpolate(config: InterpolationConfigType): AnimatedInterpolation {
-    return new AnimatedInterpolation(this, Interpolation.create(config));
+    
+    return super.addListener(callback);
   }
 
   __attach(): void {
@@ -74,5 +56,3 @@ class AnimatedMultiplication extends AnimatedWithChildren {
     this._b.__removeChild(this);
   }
 }
-
-module.exports = AnimatedMultiplication;

@@ -8,20 +8,19 @@
  *
  * @flow
  */
-'use strict';
 
-var AnimatedWithChildren = require('./AnimatedWithChildren');
-var InteractionManager = require('./injectable/InteractionManager');
-var AnimatedInterpolation = require('./AnimatedInterpolation');
-var Interpolation = require('./Interpolation');
-var Animation = require('./Animation');
-var guid = require('./guid');
-var Set = global.Set || require('./SetPolyfill');
+import guid from './guid';
+import Animation from './Animation';
+import Interpolation from './Interpolation';
+import InteractionManager from './injectable/InteractionManager';
+import AnimatedInterpolation from './AnimatedInterpolation';
+import AnimatedWithListenersAndChildren from './AnimatedWithListenersAndChildren';
 
-import type { EndCallback } from './Animation';
+import { IAnimated } from './Animated';
 import type { InterpolationConfigType } from './Interpolation';
+import type { EndResult, EndCallback } from './Animation';
 
-export type ValueListenerCallback = (state: {value: number}) => void;
+const Set = global.Set || require('./SetPolyfill');
 
 /**
  * Animated works by building a directed acyclic graph of dependencies
@@ -45,16 +44,19 @@ export type ValueListenerCallback = (state: {value: number}) => void;
  * this two-phases process is to deal with composite props such as
  * transform which can receive values from multiple parents.
  */
-function _flush(rootNode: AnimatedValue): void {
-  var animatedStyles = new Set();
-  function findAnimatedStyles(node) {
-    if (typeof node.update === 'function') {
-      animatedStyles.add(node);
-    } else {
-      node.__getChildren().forEach(findAnimatedStyles);
-    }
+const findAnimatedStyles = animatedStyles => function find(node) {
+  if (typeof node.update === 'function') {
+    animatedStyles.add(node);
+  } else {
+    node.__getChildren().forEach(find);
   }
-  findAnimatedStyles(rootNode);
+}
+
+function flush(rootNode: AnimatedValue): void {
+  const animatedStyles = new Set();
+
+  findAnimatedStyles(animatedStyles)(rootNode);
+  
   animatedStyles.forEach(animatedStyle => animatedStyle.update());
 }
 
@@ -64,19 +66,18 @@ function _flush(rootNode: AnimatedValue): void {
  * mechanism at a time.  Using a new mechanism (e.g. starting a new animation,
  * or calling `setValue`) will stop any previous ones.
  */
-class AnimatedValue extends AnimatedWithChildren {
+export default class AnimatedValue extends AnimatedWithListenersAndChildren {
   _value: number;
   _offset: number;
+  _tracking: ?IAnimated;
   _animation: ?Animation;
-  _tracking: ?Animated;
-  _listeners: {[key: string]: ValueListenerCallback};
 
   constructor(value: number) {
     super();
+    
     this._value = value;
     this._offset = 0;
     this._animation = null;
-    this._listeners = {};
   }
 
   __detach() {
@@ -96,6 +97,7 @@ class AnimatedValue extends AnimatedWithChildren {
       this._animation.stop();
       this._animation = null;
     }
+    
     this._updateValue(value);
   }
 
@@ -117,21 +119,6 @@ class AnimatedValue extends AnimatedWithChildren {
     this._offset = 0;
   }
 
-  /**
-   * Adds an asynchronous listener to the value so you can observe updates from
-   * animations.  This is useful because there is no way to
-   * synchronously read the value because it might be driven natively.
-   */
-  addListener(callback: ValueListenerCallback): string {
-    var id = guid();
-    this._listeners[id] = callback;
-    return id;
-  }
-
-  removeListener(id: string): void {
-    delete this._listeners[id];
-  }
-
   removeAllListeners(): void {
     this._listeners = {};
   }
@@ -143,17 +130,15 @@ class AnimatedValue extends AnimatedWithChildren {
    */
   stopAnimation(callback?: ?(value: number) => void): void {
     this.stopTracking();
-    this._animation && this._animation.stop();
-    this._animation = null;
-    callback && callback(this.__getValue());
-  }
 
-  /**
-   * Interpolates the value before updating the property, e.g. mapping 0-1 to
-   * 0-10.
-   */
-  interpolate(config: InterpolationConfigType): AnimatedInterpolation {
-    return new AnimatedInterpolation(this, Interpolation.create(config));
+    if (this._animation) {
+      this._animation.stop();
+      this._animation = null;
+    }
+
+    if (callback) {
+      callback(this.__getValue());
+    }
   }
 
   /**
@@ -161,25 +146,23 @@ class AnimatedValue extends AnimatedWithChildren {
    * class.
    */
   animate(animation: Animation, callback: ?EndCallback): void {
-    var handle = null;
+    const previousAnimation = this._animation;
+    let handle = null;
+
     if (animation.__isInteraction) {
       handle = InteractionManager.current.createInteractionHandle();
     }
-    var previousAnimation = this._animation;
-    this._animation && this._animation.stop();
+
+    if (this._animation) {
+      this._animation.stop();
+    }
+
     this._animation = animation;
+
     animation.start(
       this._value,
-      (value) => {
-        this._updateValue(value);
-      },
-      (result) => {
-        this._animation = null;
-        if (handle !== null) {
-          InteractionManager.current.clearInteractionHandle(handle);
-        }
-        callback && callback(result);
-      },
+      this._updateValue.bind(this),
+      this.__onAnimationEnd.bind(this, handle, callback),
       previousAnimation,
     );
   }
@@ -188,25 +171,44 @@ class AnimatedValue extends AnimatedWithChildren {
    * Typically only used internally.
    */
   stopTracking(): void {
-    this._tracking && this._tracking.__detach();
-    this._tracking = null;
+    if (this._tracking) {
+      this._tracking.__detach();
+      this._tracking = null;
+    }
   }
 
   /**
    * Typically only used internally.
    */
-  track(tracking: Animated): void {
+  track(tracking: IAnimated): void {
     this.stopTracking();
+
     this._tracking = tracking;
   }
 
   _updateValue(value: number): void {
+    const listeners = this._listeners
+
     this._value = value;
-    _flush(this);
-    for (var key in this._listeners) {
-      this._listeners[key]({value: this.__getValue()});
+
+    flush(this);
+
+    for (const key in listeners) {
+      if (listeners.hasOwnProperty(key)) {
+        listeners[key]({ value: this.__getValue() });
+      }
     }
   }
-}
 
-module.exports = AnimatedValue;
+  __onAnimationEnd(handle: any, callback: ?EndCallback, result: EndResult): void {
+    this._animation = null;
+
+    if (handle !== null) {
+      InteractionManager.current.clearInteractionHandle(handle);
+    }
+
+    if (callback) {
+      callback(result);
+    }
+  };
+}

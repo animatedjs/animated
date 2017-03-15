@@ -8,13 +8,12 @@
  *
  * @flow
  */
-'use strict';
 
-var RequestAnimationFrame = {
-  current: cb => global.requestAnimationFrame(cb),
-  inject(injected) {
+const RequestAnimationFrame = {
+  current: (cb: Function) => global.requestAnimationFrame(cb),
+  inject(injected: Function) {
     RequestAnimationFrame.current = injected;
   },
 };
 
-module.exports = RequestAnimationFrame;
+export default RequestAnimationFrame;

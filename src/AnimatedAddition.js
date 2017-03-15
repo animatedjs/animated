@@ -8,60 +8,39 @@
  *
  * @flow
  */
-'use strict';
 
-var AnimatedWithChildren = require('./AnimatedWithChildren');
-var Animated = require('./Animated');
-var AnimatedValue = require('./AnimatedValue');
-var Interpolation = require('./Interpolation');
-var AnimatedInterpolation = require('./AnimatedInterpolation');
+import AnimatedValue from './AnimatedValue';
+import AnimatedWithListenersAndChildren from './AnimatedWithListenersAndChildren';
 
-import type { InterpolationConfigType } from './Interpolation';
+import type { ListenerCallback } from './AnimatedWithListenersAndChildren';
 
-class AnimatedAddition extends AnimatedWithChildren {
-  _a: Animated;
-  _b: Animated;
-  _aListener: number;
-  _bListener: number;
-  _listeners: {[key: number]: ValueListenerCallback};
+export default class AnimatedAddition extends AnimatedWithListenersAndChildren {
+  _a: AnimatedValue;
+  _b: AnimatedValue;
+  _aListener: string;
+  _bListener: string;
 
-  constructor(a: Animated | number, b: Animated | number) {
+  constructor(a: AnimatedValue | number, b: AnimatedValue | number) {
     super();
+
     this._a = typeof a === 'number' ? new AnimatedValue(a) : a;
     this._b = typeof b === 'number' ? new AnimatedValue(b) : b;
-    this._listeners = {};
+  }
+
+  addListener(callback: ListenerCallback): string {
+    if (!this._aListener && this._a.addListener) {
+      this._aListener = this._a.addListener(this.__handler.bind(this));
+    }
+
+    if (!this._bListener && this._b.addListener) {
+      this._bListener = this._b.addListener(this.__handler.bind(this));
+    }
+
+    return super.addListener(callback);
   }
 
   __getValue(): number {
     return this._a.__getValue() + this._b.__getValue();
-  }
-
-  addListener(callback: ValueListenerCallback): string {
-    if (!this._aListener && this._a.addListener) {
-      this._aListener = this._a.addListener(() => {
-        for (var key in this._listeners) {
-          this._listeners[key]({value: this.__getValue()});
-        }
-      })
-    }
-    if (!this._bListener && this._b.addListener) {
-      this._bListener = this._b.addListener(() => {
-        for (var key in this._listeners) {
-          this._listeners[key]({value: this.__getValue()});
-        }
-      })
-    }
-    var id = guid();
-    this._listeners[id] = callback;
-    return id;
-  }
-
-  removeListener(id: string): void {
-    delete this._listeners[id];
-  }
-
-  interpolate(config: InterpolationConfigType): AnimatedInterpolation {
-    return new AnimatedInterpolation(this, Interpolation.create(config));
   }
 
   __attach(): void {
@@ -74,5 +53,3 @@ class AnimatedAddition extends AnimatedWithChildren {
     this._b.__removeChild(this);
   }
 }
-
-module.exports = AnimatedAddition;
