@@ -8,17 +8,14 @@
  *
  * @flow
  */
-'use strict';
 
-var Animation = require('./Animation');
-var AnimatedValue = require('./AnimatedValue');
-var Easing = require('./Easing');
-var RequestAnimationFrame = require('./injectable/RequestAnimationFrame');
-var CancelAnimationFrame = require('./injectable/CancelAnimationFrame');
+import Easing from './Easing';
+import Animation from './Animation';
+import AnimatedValue from './AnimatedValue';
+import CancelAnimationFrame from './injectable/CancelAnimationFrame';
+import RequestAnimationFrame from './injectable/RequestAnimationFrame';
 
-import type { AnimationConfig, EndCallback } from './Animation';
-
-var easeInOut = Easing.inOut(Easing.ease);
+import type { EndCallback, AnimationConfig, UpdateCallback } from './Animation';
 
 type TimingAnimationConfigSingle = AnimationConfig & {
   toValue: number | AnimatedValue;
@@ -27,31 +24,38 @@ type TimingAnimationConfigSingle = AnimationConfig & {
   delay?: number;
 };
 
-class TimingAnimation extends Animation {
-  _startTime: number;
-  _fromValue: number;
-  _toValue: any;
-  _duration: number;
+const easeInOut = Easing.inOut(Easing.ease);
+
+export default class TimingAnimation extends Animation {
   _delay: number;
   _easing: (value: number) => number;
-  _onUpdate: (value: number) => void;
-  _animationFrame: any;
+  _toValue: any;
   _timeout: any;
+  _duration: number;
+  _onUpdate: (value: number) => void;
+  _fromValue: number;
+  _startTime: number;
+  _animationFrame: any;
 
-  constructor(
-    config: TimingAnimationConfigSingle,
-  ) {
+  constructor({
+    delay = 0,
+    easing = easeInOut,
+    toValue,
+    duration = 500,
+    isInteraction = true,
+  }: TimingAnimationConfigSingle) {
     super();
-    this._toValue = config.toValue;
-    this._easing = config.easing !== undefined ? config.easing : easeInOut;
-    this._duration = config.duration !== undefined ? config.duration : 500;
-    this._delay = config.delay !== undefined ? config.delay : 0;
-    this.__isInteraction = config.isInteraction !== undefined ? config.isInteraction : true;
+
+    this._delay = delay;
+    this._easing = easing;
+    this._toValue = toValue;
+    this._duration = duration;
+    this.__isInteraction = isInteraction;
   }
 
   start(
     fromValue: number,
-    onUpdate: (value: number) => void,
+    onUpdate: UpdateCallback,
     onEnd: ?EndCallback,
   ): void {
     this.__active = true;
@@ -59,7 +63,7 @@ class TimingAnimation extends Animation {
     this._onUpdate = onUpdate;
     this.__onEnd = onEnd;
 
-    var start = () => {
+    const start = () => {
       if (this._duration === 0) {
         this._onUpdate(this._toValue);
         this.__debouncedOnEnd({finished: true});
@@ -68,6 +72,7 @@ class TimingAnimation extends Animation {
         this._animationFrame = RequestAnimationFrame.current(this.onUpdate.bind(this));
       }
     };
+
     if (this._delay) {
       this._timeout = setTimeout(start, this._delay);
     } else {
@@ -76,15 +81,15 @@ class TimingAnimation extends Animation {
   }
 
   onUpdate(): void {
-    var now = Date.now();
+    const now = Date.now();
+
     if (now >= this._startTime + this._duration) {
       if (this._duration === 0) {
         this._onUpdate(this._toValue);
       } else {
-        this._onUpdate(
-          this._fromValue + this._easing(1) * (this._toValue - this._fromValue)
-        );
+        this._onUpdate(this._fromValue + this._easing(1) * (this._toValue - this._fromValue));
       }
+
       this.__debouncedOnEnd({finished: true});
       return;
     }
@@ -94,6 +99,7 @@ class TimingAnimation extends Animation {
         this._easing((now - this._startTime) / this._duration) *
         (this._toValue - this._fromValue)
     );
+
     if (this.__active) {
       this._animationFrame = RequestAnimationFrame.current(this.onUpdate.bind(this));
     }
@@ -101,10 +107,9 @@ class TimingAnimation extends Animation {
 
   stop(): void {
     this.__active = false;
+
     clearTimeout(this._timeout);
     CancelAnimationFrame.current(this._animationFrame);
     this.__debouncedOnEnd({finished: false});
   }
 }
-
-module.exports = TimingAnimation;

@@ -8,76 +8,82 @@
  *
  * @flow
  */
-'use strict';
 
-var Animated = require('./Animated');
-var AnimatedStyle = require('./AnimatedStyle');
+import AnimatedStyle from './AnimatedStyle';
+import AnimatedWithChildren from './AnimatedWithChildren';
 
-class AnimatedProps extends Animated {
+import { IAnimated } from './Animated';
+
+type Callback = () => void;
+
+export default class AnimatedProps implements IAnimated {
   _props: Object;
-  _callback: () => void;
+  _callback: Callback;
 
-  constructor(
-    props: Object,
-    callback: () => void,
-  ) {
-    super();
+  constructor(props: Object, callback: Callback) {
     if (props.style) {
-      props = {
-        ...props,
-        style: new AnimatedStyle(props.style),
-      };
+      props = { ...props, style: new AnimatedStyle(props.style) };
     }
+
     this._props = props;
     this._callback = callback;
+
     this.__attach();
-  }
-
-  __getValue(): Object {
-    var props = {};
-    for (var key in this._props) {
-      var value = this._props[key];
-      if (value instanceof Animated) {
-        props[key] = value.__getValue();
-      } else {
-        props[key] = value;
-      }
-    }
-    return props;
-  }
-
-  __getAnimatedValue(): Object {
-    var props = {};
-    for (var key in this._props) {
-      var value = this._props[key];
-      if (value instanceof Animated) {
-        props[key] = value.__getAnimatedValue();
-      }
-    }
-    return props;
-  }
-
-  __attach(): void {
-    for (var key in this._props) {
-      var value = this._props[key];
-      if (value instanceof Animated) {
-        value.__addChild(this);
-      }
-    }
-  }
-
-  __detach(): void {
-    for (var key in this._props) {
-      var value = this._props[key];
-      if (value instanceof Animated) {
-        value.__removeChild(this);
-      }
-    }
   }
 
   update(): void {
     this._callback();
   }
-}
 
-module.exports = AnimatedProps;
+  __getValue(): Object {
+    const props = {};
+
+    this.__forInProps((value: any, key: string) => {
+      if (value instanceof AnimatedWithChildren) {
+        props[key] = value.__getValue();
+      } else {
+        props[key] = value;
+      }
+    });
+
+    return props;
+  }
+
+  __getAnimatedValue(): Object {
+    const props = {};
+
+    this.__forInProps((value: any, key: string) => {
+      if (value instanceof AnimatedWithChildren) {
+        props[key] = value.__getAnimatedValue();
+      }
+    });
+    
+    return props;
+  }
+
+  __attach(): void {
+    this.__forInProps((value: any) => {
+      if (value instanceof AnimatedWithChildren) {
+        value.__addChild(this);
+      }
+    });
+  }
+
+  __detach(): void {
+    this.__forInProps((value: any) => {
+      if (value instanceof AnimatedWithChildren) {
+        value.__removeChild(this);
+      }
+    });
+  }
+
+  __forInProps(callback: (value: any, key: string, _props: Object) => void) {
+    const _props = this._props;
+
+    for (const key in _props) {
+      if (_props.hasOwnProperty(key)) {
+        callback(_props[key], key, _props);
+      }
+    }
+  }
+}

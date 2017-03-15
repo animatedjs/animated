@@ -8,40 +8,51 @@
  *
  * @flow
  */
-'use strict';
 
-var Animated = require('./Animated');
+import { IAnimated, IAnimatedWithChildren } from './Animated';
 
-class AnimatedWithChildren extends Animated {
-  _children: Array<Animated>;
+export default class AnimatedWithChildren implements IAnimatedWithChildren {
+  _children: Array<IAnimated>;
 
   constructor() {
-    super();
     this._children = [];
   }
 
-  __addChild(child: Animated): void {
-    if (this._children.length === 0) {
+  __attach() {}
+
+  __detach() {}
+
+  __getValue(): any {} 
+
+  __getAnimatedValue() { return this.__getValue(); } 
+
+  __addChild(child: IAnimated): void {
+    const children = this.__getChildren();
+
+    if (children.length === 0) {
       this.__attach();
     }
-    this._children.push(child);
+
+    children.push(child);
   }
 
-  __removeChild(child: Animated): void {
-    var index = this._children.indexOf(child);
+  __removeChild(child: IAnimated): void {
+    const children = this.__getChildren();
+    const index = children.indexOf(child);
+
     if (index === -1) {
       console.warn('Trying to remove a child that doesn\'t exist');
       return;
     }
-    this._children.splice(index, 1);
-    if (this._children.length === 0) {
+
+    children.splice(index, 1);
+    
+    if (children.length === 0) {
       this.__detach();
     }
   }
 
-  __getChildren(): Array<Animated> {
+  __getChildren(): Array<IAnimated> {
     return this._children;
   }
 }
-
-module.exports = AnimatedWithChildren;

@@ -8,34 +8,52 @@
  *
  * @flow
  */
-'use strict';
 
-export type EndResult = {finished: bool};
+export type EndResult = { finished: bool };
 export type EndCallback = (result: EndResult) => void;
-export type AnimationConfig = {
-  isInteraction?: bool;
-};
+export type UpdateCallback = (value: number) => void;
+export type AnimationConfig = { isInteraction?: bool };
+
+export interface IAnimation {
+  __onEnd: ?EndCallback;
+  __active: bool;
+  __isInteraction: bool;
+
+  start(
+    fromValue: number, 
+    onUpdate: UpdateCallback, 
+    onEnd: ?EndCallback, 
+    previousAnimation: ?Animation
+  ): void;
+
+  stop(): void;
+}
 
 // Important note: start() and stop() will only be called at most once.
 // Once an animation has been stopped or finished its course, it will
 // not be reused.
-class Animation {
-  __active: bool;
-  __isInteraction: bool;
-  __onEnd: ?EndCallback;
+export default class Animation implements IAnimation {
+  __onEnd = null;
+  __active = false;
+  __isInteraction = false;
+
   start(
-    fromValue: number,
-    onUpdate: (value: number) => void,
-    onEnd: ?EndCallback,
-    previousAnimation: ?Animation,
+    fromValue: number, 
+    onUpdate: UpdateCallback, 
+    onEnd: ?EndCallback, 
+    previousAnimation: ?Animation
   ): void {}
+
   stop(): void {}
+
   // Helper function for subclasses to make sure onEnd is only called once.
-  __debouncedOnEnd(result: EndResult) {
-    var onEnd = this.__onEnd;
-    this.__onEnd = null;
-    onEnd && onEnd(result);
+  __debouncedOnEnd(result: EndResult): void {
+    if (this.__onEnd) {
+      const onEnd = this.__onEnd;
+      
+      this.__onEnd = null;
+
+      onEnd(result);
+    }
   }
 }
-
-module.exports = Animation;

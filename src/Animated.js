@@ -8,18 +8,16 @@
  *
  * @flow
  */
-'use strict';
 
-// Note(vjeux): this would be better as an interface but flow doesn't
-// support them yet
-class Animated {
-  __attach(): void {}
-  __detach(): void {}
-  __getValue(): any {}
-  __getAnimatedValue(): any { return this.__getValue(); }
-  __addChild(child: Animated) {}
-  __removeChild(child: Animated) {}
-  __getChildren(): Array<Animated> { return []; }
+export interface IAnimated {
+  __attach(): void;
+  __detach(): void;
+  __getValue(): any;
+  __getAnimatedValue(): any;
 }
 
-module.exports = Animated;
+export interface IAnimatedWithChildren extends IAnimated {
+  __addChild(child: IAnimated): void;
+  __removeChild(child: IAnimated): void;
+  __getChildren(): Array<IAnimated>;
+}

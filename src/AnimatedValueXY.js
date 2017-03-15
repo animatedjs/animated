@@ -8,15 +8,18 @@
  *
  * @flow
  */
-'use strict';
 
-var Animated = require('./Animated');
-var AnimatedValue = require('./AnimatedValue');
-var AnimatedWithChildren = require('./AnimatedWithChildren');
-var invariant = require('invariant');
-var guid = require('./guid');
+import invariant from 'invariant';
 
-type ValueXYListenerCallback = (value: {x: number; y: number}) => void;
+import guid from './guid';
+import AnimatedValue from './AnimatedValue';
+import AnimatedWithChildren from './AnimatedWithChildren';
+
+import { IAnimated } from './Animated';
+
+type Value = number | AnimatedValue;
+type ValueXYAsNumbers = {x: number; y: number;};
+type ValueXYListenerCallback = (value: {x: number; y: number;}) => void;
 
 /**
  * 2D Value for driving 2D animations, such as pan gestures.  Almost identical
@@ -56,38 +59,38 @@ type ValueXYListenerCallback = (value: {x: number; y: number}) => void;
  *  }
  *```
  */
-class AnimatedValueXY extends AnimatedWithChildren {
+export default class AnimatedValueXY extends AnimatedWithChildren {
   x: AnimatedValue;
   y: AnimatedValue;
-  _listeners: {[key: string]: {x: string; y: string}};
 
-  constructor(valueIn?: ?{x: number | AnimatedValue; y: number | AnimatedValue}) {
+  _listeners: {[key: string]: {x: string; y: string}}; 
+
+  constructor({x, y}: {x: Value, y: Value}) {
     super();
-    var value: any = valueIn || {x: 0, y: 0};  // @flowfixme: shouldn't need `: any`
-    if (typeof value.x === 'number' && typeof value.y === 'number') {
-      this.x = new AnimatedValue(value.x);
-      this.y = new AnimatedValue(value.y);
+
+    if (typeof x === 'number' && typeof y === 'number') {
+      this.x = new AnimatedValue(x);
+      this.y = new AnimatedValue(y);
     } else {
       invariant(
-        value.x instanceof AnimatedValue &&
-        value.y instanceof AnimatedValue,
-        'AnimatedValueXY must be initalized with an object of numbers or ' +
-        'AnimatedValues.'
+        x instanceof AnimatedValue && y instanceof AnimatedValue,
+        'AnimatedValueXY must be initalized with an object of numbers or AnimatedValues.'
       );
-      this.x = value.x;
-      this.y = value.y;
+      this.x = x;
+      this.y = y;
     }
+
     this._listeners = {};
   }
 
-  setValue(value: {x: number; y: number}) {
-    this.x.setValue(value.x);
-    this.y.setValue(value.y);
+  setValue({x, y}: ValueXYAsNumbers): void {
+    this.x.setValue(x);
+    this.y.setValue(y);
   }
 
-  setOffset(offset: {x: number; y: number}) {
-    this.x.setOffset(offset.x);
-    this.y.setOffset(offset.y);
+  setOffset({x, y}: ValueXYAsNumbers): void {
+    this.x.setOffset(x);
+    this.y.setOffset(y);
   }
 
   flattenOffset(): void {
@@ -95,7 +98,7 @@ class AnimatedValueXY extends AnimatedWithChildren {
     this.y.flattenOffset();
   }
 
-  __getValue(): {x: number; y: number} {
+  __getValue(): ValueXYAsNumbers {
     return {
       x: this.x.__getValue(),
       y: this.y.__getValue(),
@@ -105,24 +108,28 @@ class AnimatedValueXY extends AnimatedWithChildren {
   stopAnimation(callback?: ?() => number): void {
     this.x.stopAnimation();
     this.y.stopAnimation();
-    callback && callback(this.__getValue());
+
+    if (callback) {
+      callback(this.__getValue());
+    }
   }
 
   addListener(callback: ValueXYListenerCallback): string {
-    var id = guid();
-    var jointCallback = ({value: number}) => {
-      callback(this.__getValue());
-    };
+    const id = guid();
+    const jointCallback = () => callback(this.__getValue());
+
     this._listeners[id] = {
       x: this.x.addListener(jointCallback),
       y: this.y.addListener(jointCallback),
     };
+
     return id;
   }
 
   removeListener(id: string): void {
     this.x.removeListener(this._listeners[id].x);
     this.y.removeListener(this._listeners[id].y);
+
     delete this._listeners[id];
   }
 
@@ -157,4 +164,3 @@ class AnimatedValueXY extends AnimatedWithChildren {
   }
 }
 
-module.exports = AnimatedValueXY;

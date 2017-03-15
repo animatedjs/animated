@@ -8,25 +8,26 @@
  *
  * @flow
  */
-'use strict';
 
-var CSSPropertyOperations = require('react-dom/lib/CSSPropertyOperations');
-var Animated = require('../');
+import CSSPropertyOperations  from 'react-dom/lib/CSSPropertyOperations';
+import Animated from '../index';
 
 // { scale: 2 } => 'scale(2)'
-function mapTransform(t) {
-  var k = Object.keys(t)[0];
+function mapTransform(t: Object): string {
+  const k = Object.keys(t)[0];
+
   return `${k}(${t[k]})`;
 }
 
 // NOTE(lmr):
 // Since this is a hot code path, right now this is mutative...
 // As far as I can tell, this shouldn't cause any unexpected behavior.
-function mapStyle(style) {
+function mapStyle(style: Object) {
   if (style && style.transform && typeof style.transform !== 'string') {
     // TODO(lmr): this doesn't attempt to use vendor prefixed styles
     style.transform = style.transform.map(mapTransform).join(' ');
   }
+
   return style;
 }
 
@@ -40,11 +41,9 @@ function ApplyAnimatedValues(instance, props, comp) {
   }
 }
 
-Animated
-  .inject
-  .ApplyAnimatedValues(ApplyAnimatedValues);
+Animated.inject.ApplyAnimatedValues(ApplyAnimatedValues);
 
-module.exports = {
+export default {
   ...Animated,
   div: Animated.createAnimatedComponent('div'),
   span: Animated.createAnimatedComponent('span'),

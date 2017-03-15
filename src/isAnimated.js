@@ -8,12 +8,8 @@
  *
  * @flow
  */
-'use strict';
 
-var Animated = require('./Animated');
+import AnimatedWithChildren from './AnimatedWithChildren'
 
-function isAnimated(obj) {
-  return obj instanceof Animated;
-}
+export default (obj: Object) => obj instanceof AnimatedWithChildren;
 
-module.exports = isAnimated;

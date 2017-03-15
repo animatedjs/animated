@@ -8,13 +8,12 @@
  *
  * @flow
  */
-'use strict';
 
-var CancelAnimationFrame = {
-  current: id => global.cancelAnimationFrame(id),
-  inject(injected) {
+const CancelAnimationFrame = {
+  current: (id: number) => global.cancelAnimationFrame(id),
+  inject(injected: Function) {
     CancelAnimationFrame.current = injected;
   },
 };
 
-module.exports = CancelAnimationFrame;
+export default CancelAnimationFrame;

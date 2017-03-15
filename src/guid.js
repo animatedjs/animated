@@ -8,10 +8,7 @@
  *
  * @flow
  */
-'use strict';
 
-var _uniqueId = 0;
+let uniqueId = 0;
 
-module.exports = function uniqueId(): string {
-  return String(_uniqueId++);
-};
+export default (): string => String(uniqueId++);

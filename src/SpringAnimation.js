@@ -8,16 +8,16 @@
  *
  * @flow
  */
-'use strict';
 
-var Animation = require('./Animation');
-var AnimatedValue = require('./AnimatedValue');
-var RequestAnimationFrame = require('./injectable/RequestAnimationFrame');
-var CancelAnimationFrame = require('./injectable/CancelAnimationFrame');
-var invariant = require('invariant');
-var SpringConfig = require('./SpringConfig');
+import invariant from 'invariant';
 
-import type { AnimationConfig, EndCallback } from './Animation';
+import Animation from './Animation';
+import SpringConfig from './SpringConfig';
+import AnimatedValue from './AnimatedValue';
+import CancelAnimationFrame from './injectable/CancelAnimationFrame';
+import RequestAnimationFrame from './injectable/RequestAnimationFrame';
+
+import type { EndCallback, AnimationConfig, UpdateCallback } from './Animation';
 
 type SpringAnimationConfigSingle = AnimationConfig & {
   toValue: number | AnimatedValue;
@@ -35,10 +35,11 @@ function withDefault<T>(value: ?T, defaultValue: T): T {
   if (value === undefined || value === null) {
     return defaultValue;
   }
+
   return value;
 }
 
-class SpringAnimation extends Animation {
+export default class SpringAnimation extends Animation {
   _overshootClamping: bool;
   _restDisplacementThreshold: number;
   _restSpeedThreshold: number;
@@ -54,9 +55,7 @@ class SpringAnimation extends Animation {
   _onUpdate: (value: number) => void;
   _animationFrame: any;
 
-  constructor(
-    config: SpringAnimationConfigSingle,
-  ) {
+  constructor(config: SpringAnimationConfigSingle) {
     super();
 
     this._overshootClamping = withDefault(config.overshootClamping, false);
@@ -67,29 +66,34 @@ class SpringAnimation extends Animation {
     this._toValue = config.toValue;
     this.__isInteraction = config.isInteraction !== undefined ? config.isInteraction : true;
 
-    var springConfig;
+    const springConfig = this._getSpringConfig(config);
+
+    this._tension = springConfig.tension;
+    this._friction = springConfig.friction;
+  }
+
+  _getSpringConfig(config: SpringAnimationConfigSingle) {
     if (config.bounciness !== undefined || config.speed !== undefined) {
       invariant(
         config.tension === undefined && config.friction === undefined,
         'You can only define bounciness/speed or tension/friction but not both',
       );
-      springConfig = SpringConfig.fromBouncinessAndSpeed(
+
+      return SpringConfig.fromBouncinessAndSpeed(
         withDefault(config.bounciness, 8),
         withDefault(config.speed, 12),
       );
-    } else {
-      springConfig = SpringConfig.fromOrigamiTensionAndFriction(
-        withDefault(config.tension, 40),
-        withDefault(config.friction, 7),
-      );
     }
-    this._tension = springConfig.tension;
-    this._friction = springConfig.friction;
+
+    return SpringConfig.fromOrigamiTensionAndFriction(
+      withDefault(config.tension, 40),
+      withDefault(config.friction, 7),
+    );
   }
 
   start(
     fromValue: number,
-    onUpdate: (value: number) => void,
+    onUpdate: UpdateCallback,
     onEnd: ?EndCallback,
     previousAnimation: ?Animation,
   ): void {
@@ -102,15 +106,17 @@ class SpringAnimation extends Animation {
     this._lastTime = Date.now();
 
     if (previousAnimation instanceof SpringAnimation) {
-      var internalState = previousAnimation.getInternalState();
+      const internalState = previousAnimation.getInternalState();
+
       this._lastPosition = internalState.lastPosition;
       this._lastVelocity = internalState.lastVelocity;
       this._lastTime = internalState.lastTime;
     }
-    if (this._initialVelocity !== undefined &&
-        this._initialVelocity !== null) {
+
+    if (this._initialVelocity !== undefined && this._initialVelocity !== null) {
       this._lastVelocity = this._initialVelocity;
     }
+
     this.onUpdate();
   }
 
@@ -123,18 +129,13 @@ class SpringAnimation extends Animation {
   }
 
   onUpdate(): void {
-    var position = this._lastPosition;
-    var velocity = this._lastVelocity;
-
-    var tempPosition = this._lastPosition;
-    var tempVelocity = this._lastVelocity;
-
     // If for some reason we lost a lot of frames (e.g. process large payload or
     // stopped in the debugger), we only advance by 4 frames worth of
     // computation and will continue on the next frame. It's better to have it
     // running at faster speed than jumping to the end.
-    var MAX_STEPS = 64;
-    var now = Date.now();
+    const MAX_STEPS = 64;
+    let now = Date.now();
+
     if (now > this._lastTime + MAX_STEPS) {
       now = this._lastTime + MAX_STEPS;
     }
@@ -142,37 +143,46 @@ class SpringAnimation extends Animation {
     // We are using a fixed time step and a maximum number of iterations.
     // The following post provides a lot of thoughts into how to build this
     // loop: http://gafferongames.com/game-physics/fix-your-timestep/
-    var TIMESTEP_MSEC = 1;
-    var numSteps = Math.floor((now - this._lastTime) / TIMESTEP_MSEC);
+    const TIMESTEP_MSEC = 1;
+    const numSteps = Math.floor((now - this._lastTime) / TIMESTEP_MSEC);
 
-    for (var i = 0; i < numSteps; ++i) {
+    let position = this._lastPosition;
+    let velocity = this._lastVelocity;
+    let tempPosition = this._lastPosition;
+    let tempVelocity = this._lastVelocity;
+
+    for (let i = 0; i < numSteps; ++i) {
       // Velocity is based on seconds instead of milliseconds
-      var step = TIMESTEP_MSEC / 1000;
+      const step = TIMESTEP_MSEC / 1000;
 
       // This is using RK4. A good blog post to understand how it works:
       // http://gafferongames.com/game-physics/integration-basics/
-      var aVelocity = velocity;
-      var aAcceleration = this._tension * (this._toValue - tempPosition) - this._friction * tempVelocity;
-      var tempPosition = position + aVelocity * step / 2;
-      var tempVelocity = velocity + aAcceleration * step / 2;
+      const aVelocity = velocity;
+      const aAcceleration = this._tension * (this._toValue - tempPosition) - this._friction * tempVelocity;
 
-      var bVelocity = tempVelocity;
-      var bAcceleration = this._tension * (this._toValue - tempPosition) - this._friction * tempVelocity;
+      tempPosition = position + aVelocity * step / 2;
+      tempVelocity = velocity + aAcceleration * step / 2;
+
+      const bVelocity = tempVelocity;
+      const bAcceleration = this._tension * (this._toValue - tempPosition) - this._friction * tempVelocity;
+
       tempPosition = position + bVelocity * step / 2;
       tempVelocity = velocity + bAcceleration * step / 2;
 
-      var cVelocity = tempVelocity;
-      var cAcceleration = this._tension * (this._toValue - tempPosition) - this._friction * tempVelocity;
+      const cVelocity = tempVelocity;
+      const cAcceleration = this._tension * (this._toValue - tempPosition) - this._friction * tempVelocity;
+
       tempPosition = position + cVelocity * step / 2;
       tempVelocity = velocity + cAcceleration * step / 2;
 
-      var dVelocity = tempVelocity;
-      var dAcceleration = this._tension * (this._toValue - tempPosition) - this._friction * tempVelocity;
+      const dVelocity = tempVelocity;
+      const dAcceleration = this._tension * (this._toValue - tempPosition) - this._friction * tempVelocity;
+
       tempPosition = position + cVelocity * step / 2;
       tempVelocity = velocity + cAcceleration * step / 2;
 
-      var dxdt = (aVelocity + 2 * (bVelocity + cVelocity) + dVelocity) / 6;
-      var dvdt = (aAcceleration + 2 * (bAcceleration + cAcceleration) + dAcceleration) / 6;
+      const dxdt = (aVelocity + 2 * (bVelocity + cVelocity) + dVelocity) / 6;
+      const dvdt = (aAcceleration + 2 * (bAcceleration + cAcceleration) + dAcceleration) / 6;
 
       position += dxdt * step;
       velocity += dvdt * step;
@@ -183,12 +193,14 @@ class SpringAnimation extends Animation {
     this._lastVelocity = velocity;
 
     this._onUpdate(position);
+    
     if (!this.__active) { // a listener might have stopped us in _onUpdate
       return;
     }
 
     // Conditions for stopping the spring animation
-    var isOvershooting = false;
+    let isOvershooting = false;
+
     if (this._overshootClamping && this._tension !== 0) {
       if (this._startPosition < this._toValue) {
         isOvershooting = position > this._toValue;
@@ -196,8 +208,10 @@ class SpringAnimation extends Animation {
         isOvershooting = position < this._toValue;
       }
     }
-    var isVelocity = Math.abs(velocity) <= this._restSpeedThreshold;
-    var isDisplacement = true;
+
+    const isVelocity = Math.abs(velocity) <= this._restSpeedThreshold;
+    let isDisplacement = true;
+
     if (this._tension !== 0) {
       isDisplacement = Math.abs(this._toValue - position) <= this._restDisplacementThreshold;
     }
@@ -211,14 +225,14 @@ class SpringAnimation extends Animation {
       this.__debouncedOnEnd({finished: true});
       return;
     }
+
     this._animationFrame = RequestAnimationFrame.current(this.onUpdate.bind(this));
   }
 
   stop(): void {
     this.__active = false;
+
     CancelAnimationFrame.current(this._animationFrame);
     this.__debouncedOnEnd({finished: false});
   }
 }
-
-module.exports = SpringAnimation;

@@ -36,3 +36,5 @@ node_modules
 .DS_Store
 
 examples/interactive-docs/example.bundle.js
+
+\.vscode/

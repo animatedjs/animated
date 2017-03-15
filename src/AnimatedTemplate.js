@@ -8,52 +8,52 @@
  *
  * @flow
  */
-'use strict';
 
-var Animated = require('./Animated');
-var AnimatedWithChildren = require('./AnimatedWithChildren');
+import AnimatedWithChildren from './AnimatedWithChildren';
 
-class AnimatedTemplate extends AnimatedWithChildren {
+export default class AnimatedTemplate extends AnimatedWithChildren {
+  _values: Array<any>;
   _strings: Array<string>;
-  _values: Array;
 
-  constructor(strings, values) {
+  constructor(strings: Array<string>, values: Array<any>) {
     super();
-    this._strings = strings;
+
     this._values = values;
+    this._strings = strings;
   }
 
-  __transformValue(value): any {
-    if (value instanceof Animated) {
+  __transformValue(value: any): any {
+    if (value instanceof AnimatedWithChildren) {
       return value.__getValue();
     } else {
       return value;
     }
   }
 
-  __getValue(): String {
-    var value = this._strings[0];
-    for (var i = 0; i < this._values.length; ++i) {
-      value += this.__transformValue(this._values[i]) + this._strings[1 + i];
-    }
-    return value;
+  __getValue(): string {
+    const strings = this._strings;
+    let string = strings[0];
+
+    this._values.forEach((value, i) => {
+      string += this.__transformValue(value) + strings[1 + i];
+    });
+
+    return string;
   }
 
   __attach(): void {
-    for (var i = 0; i < this._values.length; ++i) {
-      if (this._values[i] instanceof Animated) {
-        this._values[i].__addChild(this);
+    this._values.forEach(value => {
+      if (value instanceof AnimatedWithChildren) {
+        value.__addChild(this);
       }
-    }
+    });
   }
 
   __detach(): void {
-    for (var i = 0; i < this._values.length; ++i) {
-      if (this._values[i] instanceof Animated) {
-        this._values[i].__removeChild(this);
+    this._values.forEach(value => {
+      if (value instanceof AnimatedWithChildren) {
+        value.__removeChild(this);
       }
-    }
+    });
   }
 }
-
-module.exports = AnimatedTemplate;
