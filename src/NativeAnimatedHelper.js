@@ -16,8 +16,8 @@
 */
 'use strict';
 
-const NativeAnimatedModule = {}
-const NativeEventEmitter = () => {};
+const NativeAnimatedModule = require('NativeModules').NativeAnimatedModule;
+const NativeEventEmitter = require('NativeEventEmitter');
 
 const invariant = require('invariant');
 
