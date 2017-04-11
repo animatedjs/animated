@@ -21,13 +21,6 @@ const Animated = {
   View: AnimatedImplementation.createAnimatedComponent(View),
   Text: AnimatedImplementation.createAnimatedComponent(Text),
   Image: AnimatedImplementation.createAnimatedComponent(Image),
-  get ScrollView() {
-    // Make this lazy to avoid circular reference.
-    if (!AnimatedScrollView) {
-      AnimatedScrollView = AnimatedImplementation.createAnimatedComponent(require('react-native').ScrollView);
-    }
-    return AnimatedScrollView;
-  },
 };
 
 Object.assign((Animated: Object), AnimatedImplementation);
