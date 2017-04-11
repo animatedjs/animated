@@ -1147,12 +1147,15 @@ class AnimatedInterpolation extends AnimatedWithChildren {
   _parent: Animated;
   _config: InterpolationConfigType;
   _interpolation: (input: number) => number | string;
+  _listeners: {[key: number]: ValueListenerCallback};
+  _parentListener: number;
 
   constructor(parent: Animated, config: InterpolationConfigType) {
     super();
     this._parent = parent;
     this._config = config;
     this._interpolation = Interpolation.create(config);
+    this._listeners = {};
   }
 
   __getValue(): number | string {
@@ -1173,6 +1176,7 @@ class AnimatedInterpolation extends AnimatedWithChildren {
   }
 
   __detach(): void {
+    this._parentListener = this._parent.removeListener(this._parentListener);
     this._parent.__removeChild(this);
     super.__detach();
   }
@@ -1193,6 +1197,32 @@ class AnimatedInterpolation extends AnimatedWithChildren {
         return parseFloat(value, 10) || 0;
       }
     });
+  }
+
+  /**
+   * Adds an asynchronous listener to the value so you can observe updates from
+   * animations.  This is useful because there is no way to
+   * synchronously read the value because it might be driven natively.
+   */
+  addListener(callback: ValueListenerCallback): string {
+    var id = String(_uniqueId++);
+    if (!this._parentListener) {
+      this._parentListener = this._parent.addListener(() => {
+        for (var key in this._listeners) {
+          this._listeners[key]({value: this.__getValue()});
+        }
+      })
+    }
+    this._listeners[id] = callback;
+    return id;
+  }
+
+  removeListener(id: string): void {
+    delete this._listeners[id];
+  }
+
+  removeAllListeners(): void {
+    this._listeners = {};
   }
 
   __getNativeConfig(): any {
