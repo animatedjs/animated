@@ -16,12 +16,10 @@ var InteractionManager = require('./injectable/InteractionManager');
 var Interpolation = require('./Interpolation');
 var NativeAnimatedHelper = require('./NativeAnimatedHelper');
 var React = require('React');
-var ReactNative = { 
-  findNodeHandle: () => {}
-}
+var ReactNative = require("ReactNative");
 var Set = require('./polyfills/Set');
 var SpringConfig = require('./SpringConfig');
-// var ViewStylePropTypes = require('ViewStylePropTypes');
+var ViewStylePropTypes = require('ViewStylePropTypes');
 
 var flattenStyle = require('./injectable/FlattenStyle');
 var invariant = require('invariant');
