@@ -27,6 +27,7 @@ var flattenStyle = require('./injectable/FlattenStyle');
 var invariant = require('invariant');
 var requestAnimationFrame = require('./injectable/RequestAnimationFrame');
 var ApplyAnimatedValues = require('./injectable/ApplyAnimatedValues');
+var cancelAnimationFrame = require('./injectable/CancelAnimationFrame');
 
 import type { InterpolationConfigType } from 'Interpolation';
 
@@ -359,7 +360,7 @@ class TimingAnimation extends Animation {
     super.stop();
     this.__active = false;
     clearTimeout(this._timeout);
-    global.cancelAnimationFrame(this._animationFrame);
+    cancelAnimationFrame.current(this._animationFrame);
     this.__debouncedOnEnd({finished: false});
   }
 }
@@ -447,7 +448,7 @@ class DecayAnimation extends Animation {
   stop(): void {
     super.stop();
     this.__active = false;
-    global.cancelAnimationFrame(this._animationFrame);
+    cancelAnimationFrame.current(this._animationFrame);
     this.__debouncedOnEnd({finished: false});
   }
 }
@@ -688,7 +689,7 @@ class SpringAnimation extends Animation {
   stop(): void {
     super.stop();
     this.__active = false;
-    global.cancelAnimationFrame(this._animationFrame);
+    cancelAnimationFrame.current(this._animationFrame);
     this.__debouncedOnEnd({finished: false});
   }
 }
@@ -2905,7 +2906,13 @@ module.exports = {
    * `Animated.event` with `useNativeDrive: true` if possible.
    */
   attachNativeEvent,
-
+  inject: {
+    ApplyAnimatedValues: ApplyAnimatedValues.inject,
+    InteractionManager: InteractionManager.inject,
+    FlattenStyle: flattenStyle.inject,
+    RequestAnimationFrame: requestAnimationFrame.inject,
+    CancelAnimationFrame: cancelAnimationFrame.inject,
+  },
   /**
    * Advanced imperative API for snooping on animated events that are passed in through props. Use
    * values directly where possible.

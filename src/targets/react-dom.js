@@ -14,8 +14,6 @@
 var CSSPropertyOperations = require('react-dom/lib/CSSPropertyOperations');
 var AnimatedImplementation = require('../AnimatedImplementation');
 
-var ApplyAnimatedValueInjectable = require('../injectable/ApplyAnimatedValues');
-
 // { scale: 2 } => 'scale(2)'
 function mapTransform(t) {
   var k = Object.keys(t)[0];
@@ -43,20 +41,7 @@ function ApplyAnimatedValues(instance, props, comp) {
   }
 }
 
-/*
-  This used to be in the main lib and exported then brought into each specifci file
-  However all separate files are now merged into one `AnimatedImplementation file
-  Many of these injects weren't use, so leaving them here.
-  inject: {
-    ApplyAnimatedValues: require('./injectable/ApplyAnimatedValues').inject,
-    InteractionManager: require('./injectable/InteractionManager').inject,
-    FlattenStyle: require('./injectable/flattenStyle').inject,
-    RequestAnimationFrame: require('./injectable/RequestAnimationFrame').inject,
-    CancelAnimationFrame: require('./injectable/CancelAnimationFrame').inject,
-  },
-*/
-
-ApplyAnimatedValueInjectable.inject(ApplyAnimatedValues);
+AnimatedImplementation.inject.ApplyAnimatedValues(ApplyAnimatedValues);
 
 var Animated = {
   div: AnimatedImplementation.createAnimatedComponent('div'),
