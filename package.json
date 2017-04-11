@@ -11,6 +11,7 @@
     "build:interactive-docs": "browserify -e examples/interactive-docs/example.js -o examples/interactive-docs/example.bundle.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "browser": "lib/targets/react-dom.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/animatedjs/animated.git"
@@ -28,8 +29,7 @@
   },
   "homepage": "https://github.com/animatedjs/animated#readme",
   "dependencies": {
-    "invariant": "^2.2.0",
-    "normalize-css-color": "^1.0.1"
+    "invariant": "^2.2.0"
   },
   "peerDependencies": {
     "react": "*",
@@ -45,7 +45,7 @@
     "babel-preset-react": "^6.5.0",
     "babel-preset-react-native": "^1.4.0",
     "browserify": "^13.0.0",
-    "react": "^15.4.0",
-    "react-dom": "^15.4.0"
+    "react": "^15.5.3",
+    "react-dom": "^15.5.3"
   }
 }

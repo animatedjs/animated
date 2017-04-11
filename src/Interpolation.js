@@ -6,24 +6,28 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
+ * @providesModule Interpolation
  * @flow
  */
 /* eslint no-bitwise: 0 */
 'use strict';
 
-var normalizeColor = require('normalize-css-color');
-
 var invariant = require('invariant');
+var normalizeColor = require('./normalizeColor');
 
 type ExtrapolateType = 'extend' | 'identity' | 'clamp';
 
 export type InterpolationConfigType = {
-  inputRange: Array<number>;
-  outputRange: (Array<number> | Array<string>);
-  easing?: ((input: number) => number);
-  extrapolate?: ExtrapolateType;
-  extrapolateLeft?: ExtrapolateType;
-  extrapolateRight?: ExtrapolateType;
+  inputRange: Array<number>,
+  /* $FlowFixMe(>=0.38.0 site=react_native_fb,react_native_oss) - Flow error
+   * detected during the deployment of v0.38.0. To see the error, remove this
+   * comment and run flow
+   */
+  outputRange: (Array<number> | Array<string>),
+  easing?: ((input: number) => number),
+  extrapolate?: ExtrapolateType,
+  extrapolateLeft?: ExtrapolateType,
+  extrapolateRight?: ExtrapolateType,
 };
 
 var linear = (t) => t;
@@ -160,10 +164,10 @@ function interpolate(
 function colorToRgba(input: string): string {
   var int32Color = normalizeColor(input);
   if (int32Color === null) {
-   return input;
+    return input;
   }
 
-  int32Color = int32Color || 0; // $FlowIssue
+  int32Color = int32Color || 0;
 
   var r = (int32Color & 0xff000000) >>> 24;
   var g = (int32Color & 0x00ff0000) >>> 16;
@@ -224,7 +228,7 @@ function createInterpolationFromStringOutputRange(
 
   // rgba requires that the r,g,b are integers.... so we want to round them, but we *dont* want to
   // round the opacity (4th column).
-  const shouldRound = (/^rgb/).test(outputRange[0]);
+  const shouldRound = isRgbOrRgba(outputRange[0]);
 
   return (input) => {
     var i = 0;
@@ -232,10 +236,15 @@ function createInterpolationFromStringOutputRange(
     // ->
     // 'rgba(${interpolations[0](input)}, ${interpolations[1](input)}, ...'
     return outputRange[0].replace(stringShapeRegex, () => {
-      const val = interpolations[i++](input);
-      return String(shouldRound && i < 4 ? Math.round(val) : val);
+      const val = +interpolations[i++](input);
+      const rounded = shouldRound && i < 4 ? Math.round(val) : Math.round(val * 1000) / 1000;
+      return String(rounded);
     });
   };
+}
+
+function isRgbOrRgba(range) {
+  return typeof range === 'string' && range.startsWith('rgb');
 }
 
 function checkPattern(arr: Array<string>) {
