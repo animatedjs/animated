@@ -2,7 +2,7 @@
   "name": "animated",
   "version": "0.2.0",
   "description": "Declarative Animations Library for React and React Native",
-  "main": "lib/index.js",
+  "main": "lib/targets/react-dom",
   "scripts": {
     "prepublish": "npm run build:lib",
     "build": "npm run build:lib && npm run build:interactive-docs",
@@ -28,8 +28,7 @@
   },
   "homepage": "https://github.com/animatedjs/animated#readme",
   "dependencies": {
-    "invariant": "^2.2.0",
-    "normalize-css-color": "^1.0.1"
+    "invariant": "^2.2.0"
   },
   "peerDependencies": {
     "react": "*",
@@ -45,7 +44,7 @@
     "babel-preset-react": "^6.5.0",
     "babel-preset-react-native": "^1.4.0",
     "browserify": "^13.0.0",
-    "react": "^15.4.0",
-    "react-dom": "^15.4.0"
+    "react": "^15.5.3",
+    "react-dom": "^15.5.3"
   }
 }

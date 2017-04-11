@@ -10,8 +10,11 @@
  */
 'use strict';
 
+// We need to remove this and come up with our own for React v16
 var CSSPropertyOperations = require('react-dom/lib/CSSPropertyOperations');
-var Animated = require('../');
+var AnimatedImplementation = require('../AnimatedImplementation');
+
+var ApplyAnimatedValueInjectable = require('../injectable/ApplyAnimatedValues');
 
 // { scale: 2 } => 'scale(2)'
 function mapTransform(t) {
@@ -40,13 +43,28 @@ function ApplyAnimatedValues(instance, props, comp) {
   }
 }
 
-Animated
-  .inject
-  .ApplyAnimatedValues(ApplyAnimatedValues);
+/*
+  This used to be in the main lib and exported then brought into each specifci file
+  However all separate files are now merged into one `AnimatedImplementation file
+  Many of these injects weren't use, so leaving them here.
+  inject: {
+    ApplyAnimatedValues: require('./injectable/ApplyAnimatedValues').inject,
+    InteractionManager: require('./injectable/InteractionManager').inject,
+    FlattenStyle: require('./injectable/flattenStyle').inject,
+    RequestAnimationFrame: require('./injectable/RequestAnimationFrame').inject,
+    CancelAnimationFrame: require('./injectable/CancelAnimationFrame').inject,
+  },
+*/
 
-module.exports = {
-  ...Animated,
-  div: Animated.createAnimatedComponent('div'),
-  span: Animated.createAnimatedComponent('span'),
-  img: Animated.createAnimatedComponent('img'),
+ApplyAnimatedValueInjectable.inject(ApplyAnimatedValues);
+
+var Animated = {
+  div: AnimatedImplementation.createAnimatedComponent('div'),
+  span: AnimatedImplementation.createAnimatedComponent('span'),
+  img: AnimatedImplementation.createAnimatedComponent('img'),
 };
+
+
+Object.assign((Animated: Object), AnimatedImplementation);
+
+module.exports = ((Animated: any): (typeof AnimatedImplementation) & typeof Animated);
