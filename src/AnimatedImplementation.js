@@ -12,14 +12,20 @@
  */
 'use strict';
 
+/*
+  We noop NativeAnimatedHelper, ViewStylePropTypes, and ReactNative here.
+  This will need to be fixed if we are going to use this in RN at some point.
+  Likely need to convert these to `injectables`
+*/
+
 var InteractionManager = require('./injectable/InteractionManager');
 var Interpolation = require('./Interpolation');
-var NativeAnimatedHelper = require('./NativeAnimatedHelper');
+var NativeAnimatedHelper = {};
 var React = require('React');
-var ReactNative = require("ReactNative");
+var ReactNative = {};
 var Set = require('./polyfills/Set');
 var SpringConfig = require('./SpringConfig');
-var ViewStylePropTypes = require('ViewStylePropTypes');
+// var ViewStylePropTypes = require('ViewStylePropTypes');
 
 var flattenStyle = require('./injectable/FlattenStyle');
 var invariant = require('invariant');

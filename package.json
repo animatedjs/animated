@@ -2,7 +2,7 @@
   "name": "animated",
   "version": "0.2.0",
   "description": "Declarative Animations Library for React and React Native",
-  "main": "lib/targets/react-native",
+  "main": "lib/index.js",
   "scripts": {
     "prepublish": "npm run build:lib",
     "build": "npm run build:lib && npm run build:interactive-docs",
@@ -11,12 +11,7 @@
     "build:interactive-docs": "browserify -e examples/interactive-docs/example.js -o examples/interactive-docs/example.bundle.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "browser": {
-    "NativeModules": false,
-    "NativeEventEmitter": false,
-    "ReactNative": false,
-    "ViewStylePropTypes": false
-  },
+  "browser": "lib/targets/react-dom.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/animatedjs/animated.git"
