@@ -24,7 +24,7 @@ export type InterpolationConfigType = {
   extrapolate?: ExtrapolateType;
   extrapolateLeft?: ExtrapolateType;
   extrapolateRight?: ExtrapolateType;
-};
+} | (input: number) => number | string;
 
 var linear = (t) => t;
 
@@ -34,6 +34,17 @@ var linear = (t) => t;
  */
 class Interpolation {
   static create(config: InterpolationConfigType): (input: number) => number | string {
+
+    if (typeof config === 'function') {
+      const result = config(input);
+
+      invariant(
+        typeof result === 'string' || typeof result === 'number',
+        'Custom interpolator must return a string or a number'
+      );
+
+      return result;
+    }
 
     if (config.outputRange && typeof config.outputRange[0] === 'string') {
       return createInterpolationFromStringOutputRange(config);
