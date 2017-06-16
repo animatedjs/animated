@@ -46,6 +46,8 @@ Animated
 
 module.exports = {
   ...Animated,
+  a: Animated.createAnimatedComponent('a'),
+  button: Animated.createAnimatedComponent('button'),
   div: Animated.createAnimatedComponent('div'),
   span: Animated.createAnimatedComponent('span'),
   img: Animated.createAnimatedComponent('img'),
