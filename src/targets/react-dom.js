@@ -16,6 +16,13 @@ var Animated = require('../');
 // { scale: 2 } => 'scale(2)'
 function mapTransform(t) {
   var k = Object.keys(t)[0];
+  // { translateY: 35 } => 'translateY(35px)'
+  // Following are transform functions who accept arguments of type <length> or <length-percentage>. These functions won't work if we send them numbers, so we convert those numbers to px.
+  // Source: https://developer.mozilla.org/en-US/docs/Web/CSS/transform?v=b
+  var transformFunctionsWhoAcceptNumbers = ["translateX", "translateY", "translateZ", "perspective"];
+  if (transformFunctionsWhoAcceptNumbers.includes(k) && typeof t[k] === "number") {
+    return k+'('+t[k]+'px)';
+  }
   return `${k}(${t[k]})`;
 }
 
