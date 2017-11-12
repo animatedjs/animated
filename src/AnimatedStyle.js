@@ -10,10 +10,10 @@
  */
 'use strict';
 
-var Animated = require('./Animated');
-var AnimatedWithChildren = require('./AnimatedWithChildren');
-var AnimatedTransform = require('./AnimatedTransform');
-var FlattenStyle = require('./injectable/FlattenStyle');
+import Animated from './Animated';
+import AnimatedWithChildren from './AnimatedWithChildren';
+import AnimatedTransform from './AnimatedTransform';
+import FlattenStyle from './injectable/FlattenStyle';
 
 class AnimatedStyle extends AnimatedWithChildren {
   _style: Object;
@@ -73,4 +73,4 @@ class AnimatedStyle extends AnimatedWithChildren {
   }
 }
 
-module.exports = AnimatedStyle;
+export default AnimatedStyle;

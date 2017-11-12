@@ -20,4 +20,4 @@ var InteractionManager = {
   },
 };
 
-module.exports = InteractionManager;
+export default InteractionManager;

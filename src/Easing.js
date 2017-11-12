@@ -10,7 +10,7 @@
  */
 'use strict';
 
-var _bezier = require('./bezier');
+import _bezier from './bezier';
 
 /**
  * This class implements common easing functions. The math is pretty obscure,
@@ -142,4 +142,4 @@ var ease = Easing.bezier(0.42, 0, 1, 1);
 
 
 
-module.exports = Easing;
+export default Easing;

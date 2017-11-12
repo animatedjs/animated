@@ -10,12 +10,12 @@
  */
 'use strict';
 
-var Animation = require('./Animation');
-var AnimatedValue = require('./AnimatedValue');
-var RequestAnimationFrame = require('./injectable/RequestAnimationFrame');
-var CancelAnimationFrame = require('./injectable/CancelAnimationFrame');
-var invariant = require('invariant');
-var SpringConfig = require('./SpringConfig');
+import Animation from './Animation';
+import AnimatedValue from './AnimatedValue';
+import RequestAnimationFrame from './injectable/RequestAnimationFrame';
+import CancelAnimationFrame from './injectable/CancelAnimationFrame';
+import invariant from 'invariant';
+import SpringConfig from './SpringConfig';
 
 import type { AnimationConfig, EndCallback } from './Animation';
 
@@ -221,4 +221,4 @@ class SpringAnimation extends Animation {
   }
 }
 
-module.exports = SpringAnimation;
+export default SpringAnimation;

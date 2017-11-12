@@ -11,9 +11,8 @@
 /* eslint no-bitwise: 0 */
 'use strict';
 
-var normalizeColor = require('normalize-css-color');
-
-var invariant = require('invariant');
+import normalizeColor from 'normalize-css-color';
+import invariant from 'invariant';
 
 type ExtrapolateType = 'extend' | 'identity' | 'clamp';
 
@@ -287,4 +286,4 @@ function checkInfiniteRange(name: string, arr: Array<number>) {
   );
 }
 
-module.exports = Interpolation;
+export default Interpolation;

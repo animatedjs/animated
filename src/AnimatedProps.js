@@ -10,8 +10,8 @@
  */
 'use strict';
 
-var Animated = require('./Animated');
-var AnimatedStyle = require('./AnimatedStyle');
+import Animated from './Animated';
+import AnimatedStyle from './AnimatedStyle';
 
 class AnimatedProps extends Animated {
   _props: Object;
@@ -80,4 +80,4 @@ class AnimatedProps extends Animated {
   }
 }
 
-module.exports = AnimatedProps;
+export default AnimatedProps;

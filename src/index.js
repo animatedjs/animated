@@ -10,22 +10,23 @@
  */
 'use strict';
 
-var invariant = require('invariant');
+import invariant from 'invariant';
 
-var Animated = require('./Animated');
-var AnimatedValue = require('./AnimatedValue');
-var AnimatedValueXY = require('./AnimatedValueXY');
-var AnimatedAddition = require('./AnimatedAddition');
-var AnimatedMultiplication = require('./AnimatedMultiplication');
-var AnimatedModulo = require('./AnimatedModulo');
-var AnimatedTemplate = require('./AnimatedTemplate');
-var AnimatedTracking = require('./AnimatedTracking');
-var isAnimated = require('./isAnimated');
-
-var Animation = require('./Animation');
-var TimingAnimation = require('./TimingAnimation');
-var DecayAnimation = require('./DecayAnimation');
-var SpringAnimation = require('./SpringAnimation');
+import Animated from './Animated';
+import AnimatedValue from './AnimatedValue';
+import AnimatedValueXY from './AnimatedValueXY';
+import AnimatedAddition from './AnimatedAddition';
+import AnimatedMultiplication from './AnimatedMultiplication';
+import AnimatedModulo from './AnimatedModulo';
+import AnimatedTemplate from './AnimatedTemplate';
+import AnimatedTracking from './AnimatedTracking';
+import isAnimated from './isAnimated';
+import Animation from './Animation';
+import TimingAnimation from './TimingAnimation';
+import DecayAnimation from './DecayAnimation';
+import SpringAnimation from './SpringAnimation';
+import createAnimatedComponent from './createAnimatedComponent';
+import inject from './injectable';
 
 import type { InterpolationConfigType } from './Interpolation';
 import type { AnimationConfig, EndResult, EndCallback } from './Animation';
@@ -303,6 +304,23 @@ var event = function(
   };
 };
 
+function add(a: Animated, b: Animated): AnimatedAddition {
+  return new AnimatedAddition(a, b);
+}
+
+function multiply(a: Animated, b: Animated): AnimatedMultiplication {
+  return new AnimatedMultiplication(a, b);
+}
+
+function modulo(a: Animated, modulus: number): AnimatedModulo {
+  return new AnimatedModulo(a, modulus);
+}
+
+function template(strings, ...values) {
+  return new AnimatedTemplate(strings, values);
+}
+
+
 /**
  * Animations are an important part of modern UX, and the `Animated`
  * library is designed to make them fluid, powerful, and easy to build and
@@ -392,12 +410,14 @@ var event = function(
  * limitations, but use it sparingly since it might have performance
  * implications in the future.
  */
-module.exports = {
+export default {
+
   /**
    * Standard value class for driving animations.  Typically initialized with
    * `new Animated.Value(0);`
    */
   Value: AnimatedValue,
+
   /**
    * 2D value class for driving 2D animations, such as pan gestures.
    */
@@ -408,11 +428,13 @@ module.exports = {
    * coefficient.
    */
   decay,
+
   /**
    * Animates a value along a timed easing curve.  The `Easing` module has tons
    * of pre-defined curves, or you can use your own function.
    */
   timing,
+
   /**
    * Spring animation based on Rebound and Origami.  Tracks velocity state to
    * create fluid motions as the `toValue` updates, and can be chained together.
@@ -421,51 +443,47 @@ module.exports = {
 
   /**
    * Creates a new Animated value composed from two Animated values added
-   * together.
+   * together
    */
-  add: function add(a: Animated, b: Animated): AnimatedAddition {
-    return new AnimatedAddition(a, b);
-  },
+  add,
+
   /**
    * Creates a new Animated value composed from two Animated values multiplied
    * together.
    */
-  multiply: function multiply(a: Animated, b: Animated): AnimatedMultiplication {
-    return new AnimatedMultiplication(a, b);
-  },
+  multiply,
 
   /**
    * Creates a new Animated value that is the (non-negative) modulo of the
    * provided Animated value
    */
-  modulo: function modulo(a: Animated, modulus: number): AnimatedModulo {
-    return new AnimatedModulo(a, modulus);
-  },
+  modulo,
 
   /**
    * Creates a new Animated value that is the specified string, with each
    * substitution expression being separately animated and interpolated.
    */
-  template: function template(strings, ...values) {
-    return new AnimatedTemplate(strings, values);
-  },
+  template,
 
   /**
    * Starts an animation after the given delay.
    */
   delay,
+
   /**
    * Starts an array of animations in order, waiting for each to complete
    * before starting the next.  If the current running animation is stopped, no
    * following animations will be started.
    */
   sequence,
+
   /**
    * Starts an array of animations all at the same time.  By default, if one
    * of the animations is stopped, they will all be stopped.  You can override
    * this with the `stopTogether` flag.
    */
   parallel,
+
   /**
    * Array of animations may run in parallel (overlap), but are started in
    * sequence with successive delays.  Nice for doing trailing effects.
@@ -499,15 +517,7 @@ module.exports = {
   /**
    * Make any React component Animatable.  Used to create `Animated.View`, etc.
    */
-  createAnimatedComponent: require('./createAnimatedComponent'),
+  createAnimatedComponent,
 
-  inject: {
-    ApplyAnimatedValues: require('./injectable/ApplyAnimatedValues').inject,
-    InteractionManager: require('./injectable/InteractionManager').inject,
-    FlattenStyle: require('./injectable/FlattenStyle').inject,
-    RequestAnimationFrame: require('./injectable/RequestAnimationFrame').inject,
-    CancelAnimationFrame: require('./injectable/CancelAnimationFrame').inject,
-  },
-
-  __PropsOnlyForTests: require('./AnimatedProps'),
+  inject,
 };

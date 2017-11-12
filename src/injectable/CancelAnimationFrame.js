@@ -17,4 +17,4 @@ var CancelAnimationFrame = {
   },
 };
 
-module.exports = CancelAnimationFrame;
+export default CancelAnimationFrame;

@@ -10,8 +10,8 @@
  */
 'use strict';
 
-var Animated = require('./Animated');
-var AnimatedWithChildren = require('./AnimatedWithChildren');
+import Animated from './Animated';
+import AnimatedWithChildren from './AnimatedWithChildren';
 
 class AnimatedTransform extends AnimatedWithChildren {
   _transforms: Array<Object>;
@@ -75,4 +75,4 @@ class AnimatedTransform extends AnimatedWithChildren {
   }
 }
 
-module.exports = AnimatedTransform;
+export default AnimatedTransform;

@@ -10,9 +10,9 @@
  */
 'use strict';
 
-var Animation = require('./Animation');
-var RequestAnimationFrame = require('./injectable/RequestAnimationFrame');
-var CancelAnimationFrame = require('./injectable/CancelAnimationFrame');
+import Animation from './Animation';
+import RequestAnimationFrame from './injectable/RequestAnimationFrame';
+import CancelAnimationFrame from './injectable/CancelAnimationFrame';
 
 import type { AnimationConfig, EndCallback } from './Animation';
 
@@ -80,4 +80,4 @@ class DecayAnimation extends Animation {
   }
 }
 
-module.exports = DecayAnimation;
+export default DecayAnimation;

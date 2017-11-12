@@ -17,4 +17,4 @@ var RequestAnimationFrame = {
   },
 };
 
-module.exports = RequestAnimationFrame;
+export default RequestAnimationFrame;

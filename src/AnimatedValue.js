@@ -10,13 +10,16 @@
  */
 'use strict';
 
-var AnimatedWithChildren = require('./AnimatedWithChildren');
-var InteractionManager = require('./injectable/InteractionManager');
-var AnimatedInterpolation = require('./AnimatedInterpolation');
-var Interpolation = require('./Interpolation');
-var Animation = require('./Animation');
-var guid = require('./guid');
-var Set = global.Set || require('./SetPolyfill');
+import AnimatedWithChildren from './AnimatedWithChildren';
+import InteractionManager from './injectable/InteractionManager';
+import AnimatedInterpolation from './AnimatedInterpolation';
+import Interpolation from './Interpolation';
+import Animation from './Animation';
+import guid from './guid';
+import SetPilyfill from './SetPolyfill';
+
+// TODO: wonder if we should do the set polyfill another way...
+var Set = global.Set || SetPilyfill;
 
 import type { EndCallback } from './Animation';
 import type { InterpolationConfigType } from './Interpolation';
@@ -209,4 +212,4 @@ class AnimatedValue extends AnimatedWithChildren {
   }
 }
 
-module.exports = AnimatedValue;
+export default AnimatedValue;

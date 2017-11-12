@@ -10,11 +10,11 @@
  */
 'use strict';
 
-var Animation = require('./Animation');
-var AnimatedValue = require('./AnimatedValue');
-var Easing = require('./Easing');
-var RequestAnimationFrame = require('./injectable/RequestAnimationFrame');
-var CancelAnimationFrame = require('./injectable/CancelAnimationFrame');
+import Animation from './Animation';
+import AnimatedValue from './AnimatedValue';
+import Easing from './Easing';
+import RequestAnimationFrame from './injectable/RequestAnimationFrame';
+import CancelAnimationFrame from './injectable/CancelAnimationFrame';
 
 import type { AnimationConfig, EndCallback } from './Animation';
 
@@ -107,4 +107,4 @@ class TimingAnimation extends Animation {
   }
 }
 
-module.exports = TimingAnimation;
+export default TimingAnimation;

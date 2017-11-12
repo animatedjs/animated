@@ -10,8 +10,8 @@
  */
 'use strict';
 
-var Animated = require('./Animated');
-var AnimatedWithChildren = require('./AnimatedWithChildren');
+import Animated from './Animated';
+import AnimatedWithChildren from './AnimatedWithChildren';
 
 class AnimatedTemplate extends AnimatedWithChildren {
   _strings: Array<string>;
@@ -56,4 +56,4 @@ class AnimatedTemplate extends AnimatedWithChildren {
   }
 }
 
-module.exports = AnimatedTemplate;
+export default AnimatedTemplate;

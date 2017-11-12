@@ -23,4 +23,4 @@ var ApplyAnimatedValues = {
   },
 };
 
-module.exports = ApplyAnimatedValues;
+export default ApplyAnimatedValues;
