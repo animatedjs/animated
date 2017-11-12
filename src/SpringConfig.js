@@ -95,7 +95,7 @@ function fromBouncinessAndSpeed(
   };
 }
 
-module.exports = {
+export default {
   fromOrigamiTensionAndFriction,
   fromBouncinessAndSpeed,
 };

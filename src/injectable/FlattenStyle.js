@@ -17,4 +17,4 @@ var FlattenStyle = {
   },
 };
 
-module.exports = FlattenStyle;
+export default FlattenStyle;

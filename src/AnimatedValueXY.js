@@ -10,11 +10,11 @@
  */
 'use strict';
 
-var Animated = require('./Animated');
-var AnimatedValue = require('./AnimatedValue');
-var AnimatedWithChildren = require('./AnimatedWithChildren');
-var invariant = require('invariant');
-var guid = require('./guid');
+import Animated from './Animated';
+import AnimatedValue from './AnimatedValue';
+import AnimatedWithChildren from './AnimatedWithChildren';
+import invariant from 'invariant';
+import guid from './guid';
 
 type ValueXYListenerCallback = (value: {x: number; y: number}) => void;
 
@@ -157,4 +157,4 @@ class AnimatedValueXY extends AnimatedWithChildren {
   }
 }
 
-module.exports = AnimatedValueXY;
+export default AnimatedValueXY;

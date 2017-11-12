@@ -6,8 +6,7 @@
   "scripts": {
     "prepublish": "npm run build:lib",
     "build": "npm run build:lib && npm run build:interactive-docs",
-    "build:lib": "babel src --out-dir lib",
-    "build:watch": "npm run build:lib -- --watch",
+    "build:lib": "rollup -c",
     "build:interactive-docs": "browserify -e examples/interactive-docs/example.js -o examples/interactive-docs/example.bundle.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -38,6 +37,7 @@
   "devDependencies": {
     "babel": "^6.5.2",
     "babel-cli": "^6.5.1",
+    "babel-plugin-external-helpers": "^6.22.0",
     "babel-plugin-syntax-object-rest-spread": "^6.5.0",
     "babel-plugin-syntax-trailing-function-commas": "^6.5.0",
     "babel-plugin-transform-flow-strip-types": "^6.5.0",
@@ -46,6 +46,12 @@
     "babel-preset-react-native": "^1.4.0",
     "browserify": "^13.0.0",
     "react": "^15.4.0",
-    "react-dom": "^15.4.0"
+    "react-dom": "^15.4.0",
+    "rollup": "^0.51.5",
+    "rollup-plugin-babel": "^3.0.2",
+    "rollup-plugin-commonjs": "^8.2.6",
+    "rollup-plugin-node-resolve": "^3.0.0",
+    "rollup-plugin-replace": "^2.0.0",
+    "rollup-plugin-uglify": "^2.0.1"
   }
 }

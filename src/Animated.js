@@ -22,4 +22,4 @@ class Animated {
   __getChildren(): Array<Animated> { return []; }
 }
 
-module.exports = Animated;
+export default Animated;

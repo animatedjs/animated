@@ -10,11 +10,11 @@
  */
 'use strict';
 
-var Animated = require('./Animated');
-var AnimatedWithChildren = require('./AnimatedWithChildren');
-var invariant = require('invariant');
-var Interpolation = require('./Interpolation');
-var guid = require('./guid');
+import Animated from './Animated';
+import AnimatedWithChildren from './AnimatedWithChildren';
+import invariant from 'invariant';
+import Interpolation from './Interpolation';
+import guid from './guid';
 
 import type { ValueListenerCallback } from './AnimatedValue';
 
@@ -71,4 +71,4 @@ class AnimatedInterpolation extends AnimatedWithChildren {
   }
 }
 
-module.exports = AnimatedInterpolation;
+export default AnimatedInterpolation;

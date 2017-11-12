@@ -12,6 +12,6 @@
 
 var _uniqueId = 0;
 
-module.exports = function uniqueId(): string {
+export default function uniqueId(): string {
   return String(_uniqueId++);
 };

@@ -10,11 +10,11 @@
  */
 'use strict';
 
-var AnimatedWithChildren = require('./AnimatedWithChildren');
-var Animated = require('./Animated');
-var AnimatedValue = require('./AnimatedValue');
-var Interpolation = require('./Interpolation');
-var AnimatedInterpolation = require('./AnimatedInterpolation');
+import AnimatedWithChildren from './AnimatedWithChildren';
+import Animated from './Animated';
+import AnimatedValue from './AnimatedValue';
+import Interpolation from './Interpolation';
+import AnimatedInterpolation from './AnimatedInterpolation';
 
 import type { InterpolationConfigType } from './Interpolation';
 
@@ -75,4 +75,4 @@ class AnimatedAddition extends AnimatedWithChildren {
   }
 }
 
-module.exports = AnimatedAddition;
+export default AnimatedAddition;

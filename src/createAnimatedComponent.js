@@ -10,9 +10,9 @@
  */
 'use strict';
 
-var React = require('react');
-var AnimatedProps = require('./AnimatedProps');
-var ApplyAnimatedValues = require('./injectable/ApplyAnimatedValues');
+import React from 'react';
+import AnimatedProps from './AnimatedProps';
+import ApplyAnimatedValues from './injectable/ApplyAnimatedValues';
 
 function createAnimatedComponent(Component: any): any {
   var refName = 'node';
@@ -105,4 +105,4 @@ function createAnimatedComponent(Component: any): any {
   return AnimatedComponent;
 }
 
-module.exports = createAnimatedComponent;
+export default createAnimatedComponent;

@@ -10,10 +10,10 @@
  */
 'use strict';
 
-var Animated = require('./Animated');
+import Animated from './Animated';
 
 function isAnimated(obj) {
   return obj instanceof Animated;
 }
 
-module.exports = isAnimated;
+export default isAnimated;
