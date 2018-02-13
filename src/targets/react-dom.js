@@ -174,7 +174,7 @@ function ApplyAnimatedValues(instance, props) {
 
 Animated
   .inject
-  .ApplyAnimatedValues(ApplyAnimatedValues);
+  .ApplyAnimatedValues(ApplyAnimatedValues, mapStyle);
 
 module.exports = {
   ...Animated,

@@ -185,7 +185,7 @@
         var previousScript = document.getElementsByClassName('Example' + EXAMPLE_COUNT)[0].innerText;
       } else {
         var previousScript = `
-        examplify(React.createClass({
+        examplify(createClass({
           getInitialState: function() {
             return {
               anim: new Animated.Value(0), // ignore
@@ -210,7 +210,7 @@
       var code = document.createElement('div');
       script.parentNode.insertBefore(code, script);
 
-      var Example = React.createClass({
+      var Example = createClass({
         render() {
           return (
             <div className="code">
@@ -223,7 +223,7 @@
                 <Component key={Math.random()} />
               </div>
               <hr />
-              <pre>{'React.createClass({'}</pre>
+              <pre>{'createClass({'}</pre>
               {script.innerText
                 .trim()
                 .split(/\n/g)
@@ -257,7 +257,7 @@
   <p>The basic building block of this library is <code>Animated.Value</code>. This is a variable that's going to drive the animation. You use it like a normal value in <code>style</code> attribute. Only animated components such as <code>Animated.div</code> will understand it.</p>
 
 <script type="text/babel">
-examplify(React.createClass({
+examplify(createClass({
   getInitialState: function() {
     return {
       anim: new Animated.Value(100),
@@ -281,7 +281,7 @@ examplify(React.createClass({
 <p>The <code>Animated.div</code> component when rendered tracks which animated values it received. This way, whenever that value changes, we don't need to re-render the entire component, we can directly update the specific style attribute that changed.</p>
 
 <script type="text/babel">
-examplify(React.createClass({
+examplify(createClass({
   getInitialState: function() {
     return {
       anim: new Animated.Value(0),
@@ -310,7 +310,7 @@ examplify(React.createClass({
 <p>On every frame (via <code>requestAnimationFrame</code>), the <code>timing</code> animation is going to figure out the new value based on the current time, update the animated value which in turn is going to update the corresponding DOM node.</p>
 
 <script type="text/babel">
-examplify(React.createClass({
+examplify(createClass({
   getInitialState: function() {
     return {
       anim: new Animated.Value(0),
@@ -339,7 +339,7 @@ examplify(React.createClass({
 <p>There are multiple challenges to implement this correctly. You need to stop the current animation, grab the current value and restart an animation from there. As this is pretty tedious to do manually, <code>Animated</code> will do that automatically for you.</p>
 
 <script type="text/babel">
-examplify(React.createClass({
+examplify(createClass({
   getInitialState: function() {
     return {
       anim: new Animated.Value(1),
@@ -374,7 +374,7 @@ examplify(React.createClass({
 <p>It turns out that this model is useful in a very wide range of animations. I highly recommend you to always start with a <code>spring</code> animation instead of a <code>timing</code> animation. It will make your interface feels much better.</p>
 
 <script type="text/babel">
-examplify(React.createClass({
+examplify(createClass({
   getInitialState: function() {
     return {
       anim: new Animated.Value(1),
@@ -409,7 +409,7 @@ examplify(React.createClass({
 <p>In the following example, we're going to model the animation with a variable where 1 means fully visible and 0 means fully hidden. We can pass it directly to the scale attribute as the ranges match. But for the rotation, we need to convert [0 ; 1] range to [260deg ; 0deg]. This is where <code>interpolate()</code> comes handy.</p>
 
 <script type="text/babel">
-examplify(React.createClass({
+examplify(createClass({
   getInitialState: function() {
     return {
       anim: new Animated.Value(1),
@@ -453,7 +453,7 @@ examplify(React.createClass({
 <p>There's however one exception: when you want to stop the current animation. You need to know where it stopped in order to continue from there. We cannot know the value synchronously so we give it via a callback in <code>stopAnimation</code>. It will not suffer from beign out of sync since the animation is no longer running.</p>
 
 <script type="text/babel">
-examplify(React.createClass({
+examplify(createClass({
   getInitialState: function() {
     return {
       anim: new Animated.Value(0)
@@ -503,7 +503,7 @@ examplify(React.createClass({
 <p>We introduce a little helper called <code>HorizontalPan</code> which handles all this annoying code for us. It takes an <code>Animated.Value</code> as first argument and returns the event handlers required for it to work. We just have to bind this value to the <code>left</code> attribute and we're good to go.</p>
 
 <script type="text/babel">
-examplify(React.createClass({
+examplify(createClass({
   getInitialState: function() {
     return {
       anim: new Animated.Value(0),
@@ -529,7 +529,7 @@ examplify(React.createClass({
 <p>In order to implement this effect, we are using a second real-world simulation: an object moving on an icy surface. All it needs is two values: the current velocity and a deceleration coefficient. It is implemented by <code>Animated.decay</code>.</p>
 
 <script type="text/babel">
-examplify(React.createClass({
+examplify(createClass({
   getInitialState: function() {
     return {
       anim: new Animated.Value(0),
@@ -558,7 +558,7 @@ examplify(React.createClass({
 <p>The target for an animation is usually a number but sometimes it is convenient to use another value as a target. This way, the first value will track the second. Using a spring animation, we can get a nice trailing effect.</p>
 
 <script type="text/babel">
-examplify(React.createClass({
+examplify(createClass({
   getInitialState: function() {
     var anims = [0, 1, 2, 3, 4].map((_, i) => new Animated.Value(0));
     Animated.spring(anims[0], {toValue: anims[1]}).start();
@@ -596,7 +596,7 @@ examplify(React.createClass({
 <p>As I said earlier, if you track a spring</p>
 
 <script type="text/babel">
-examplify(React.createClass({
+examplify(createClass({
   getInitialState: function() {
     var anims = [0, 1, 2, 3, 4].map((_, i) => new Animated.Value(i * 100));
     anims[0].addListener(this.handleChange);
@@ -659,7 +659,7 @@ examplify(React.createClass({
 <p>It is very common to animate </p>
 
 <script type="text/babel">
-examplify(React.createClass({
+examplify(createClass({
   getInitialState: function() {
     return {
       anims: [0, 1, 2, 3, 4].map((_, i) => new Animated.Value(0.2)),
@@ -690,7 +690,7 @@ examplify(React.createClass({
 
 
 <script type="text/babel">
-examplify(React.createClass({
+examplify(createClass({
   getInitialState: function() {
     return {
       anims: [0, 1, 2, 3, 4].map((_, i) => new Animated.Value(0.2)),
@@ -721,7 +721,7 @@ examplify(React.createClass({
 </script><script>example();</script>
 
 <script type="text/babel">
-examplify(React.createClass({
+examplify(createClass({
   getInitialState: function() {
     return {
       anims: [0, 1, 2, 3, 4].map((_, i) => new Animated.Value(0.2)),
@@ -757,7 +757,7 @@ examplify(React.createClass({
 </script><script>example();</script>
 
 <script type="text/babel">
-examplify(React.createClass({
+examplify(createClass({
   getInitialState: function() {
     return {
       anim: new Animated.Value(0),
@@ -797,7 +797,7 @@ examplify(React.createClass({
 </script><script>example();</script>
 
 <script type="text/babel">
-examplify(React.createClass({
+examplify(createClass({
   getInitialState: function() {
     return {
       anim: new Animated.Value(0)
