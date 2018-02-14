@@ -18,8 +18,12 @@ var ApplyAnimatedValues = {
       return false;
     }
   },
-  inject(apply) {
+  transformStyles: function transformStyles(style) {
+    return style;
+  },
+  inject(apply, transform) {
     ApplyAnimatedValues.current = apply;
+    ApplyAnimatedValues.transformStyles = transform;
   },
 };
 
