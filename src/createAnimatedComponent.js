@@ -8,14 +8,14 @@
  *
  * @flow
  */
-'use strict';
+"use strict";
 
-var React = require('react');
-var AnimatedProps = require('./AnimatedProps');
-var ApplyAnimatedValues = require('./injectable/ApplyAnimatedValues');
+var React = require("react");
+var AnimatedProps = require("./AnimatedProps");
+var ApplyAnimatedValues = require("./injectable/ApplyAnimatedValues");
 
 function createAnimatedComponent(Component: any): any {
-  var refName = 'node';
+  var refName = "node";
 
   class AnimatedComponent extends React.Component {
     _propsAnimated: AnimatedProps;
@@ -45,16 +45,17 @@ function createAnimatedComponent(Component: any): any {
       // need to re-render it. In this case, we have a fallback that uses
       // forceUpdate.
       var callback = () => {
-        var didUpdate = ApplyAnimatedValues.current(this.refs[refName], this._propsAnimated.__getAnimatedValue(), this);
+        var didUpdate = ApplyAnimatedValues.current(
+          this.refs[refName],
+          this._propsAnimated.__getAnimatedValue(),
+          this,
+        );
         if (didUpdate === false) {
           this.forceUpdate();
         }
       };
 
-      this._propsAnimated = new AnimatedProps(
-        nextProps,
-        callback,
-      );
+      this._propsAnimated = new AnimatedProps(nextProps, callback);
 
       // When you call detach, it removes the element from the parent list
       // of children. If it goes to 0, then the parent also detaches itself
@@ -74,15 +75,16 @@ function createAnimatedComponent(Component: any): any {
     render() {
       const props = this._propsAnimated.__getValue();
       if (props.style) {
-        props.style = ApplyAnimatedValues.transformStyles(props.style)
+        return (
+          <Component
+            {...props}
+            style={ApplyAnimatedValues.transformStyles(props.style)}
+            ref={refName}
+          />
+        );
       }
 
-      return (
-        <Component
-          {...props}
-          ref={refName}
-        />
-      );
+      return <Component {...props} ref={refName} />;
     }
   }
   AnimatedComponent.propTypes = {
@@ -104,7 +106,7 @@ function createAnimatedComponent(Component: any): any {
       //     );
       //   }
       // }
-    }
+    },
   };
 
   return AnimatedComponent;
