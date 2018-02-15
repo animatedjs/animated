@@ -72,12 +72,14 @@ function createAnimatedComponent(Component: any): any {
     }
 
     render() {
-      const { style, ...other} = this._propsAnimated.__getValue();
+      const props = this._propsAnimated.__getValue();
+      if (props.style) {
+        props.style = ApplyAnimatedValues.transformStyles(props.style)
+      }
 
       return (
         <Component
-          {...other}
-          style={ApplyAnimatedValues.transformStyles(style)}
+          {...props}
           ref={refName}
         />
       );
