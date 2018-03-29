@@ -15,8 +15,6 @@ var AnimatedProps = require('./AnimatedProps');
 var ApplyAnimatedValues = require('./injectable/ApplyAnimatedValues');
 
 function createAnimatedComponent(Component: any): any {
-  var componentRef;
-
   class AnimatedComponent extends React.Component {
     _propsAnimated: AnimatedProps;
 
@@ -81,6 +79,10 @@ function createAnimatedComponent(Component: any): any {
           ref={node => { this.componentRef = node; }}
         />
       );
+    }
+    
+    getNode() {
+      return this.componentRef;
     }
   }
   AnimatedComponent.propTypes = {
