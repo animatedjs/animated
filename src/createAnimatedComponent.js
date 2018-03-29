@@ -15,8 +15,6 @@ var AnimatedProps = require('./AnimatedProps');
 var ApplyAnimatedValues = require('./injectable/ApplyAnimatedValues');
 
 function createAnimatedComponent(Component: any): any {
-  var refName = 'node';
-
   class AnimatedComponent extends React.Component {
     _propsAnimated: AnimatedProps;
 
@@ -25,7 +23,7 @@ function createAnimatedComponent(Component: any): any {
     }
 
     setNativeProps(props) {
-      var didUpdate = ApplyAnimatedValues.current(this.refs[refName], props, this);
+      var didUpdate = ApplyAnimatedValues.current(this.componentRef, props, this);
       if (didUpdate === false) {
         this.forceUpdate();
       }
@@ -45,7 +43,7 @@ function createAnimatedComponent(Component: any): any {
       // need to re-render it. In this case, we have a fallback that uses
       // forceUpdate.
       var callback = () => {
-        var didUpdate = ApplyAnimatedValues.current(this.refs[refName], this._propsAnimated.__getAnimatedValue(), this);
+        var didUpdate = ApplyAnimatedValues.current(this.componentRef, this._propsAnimated.__getAnimatedValue(), this);
         if (didUpdate === false) {
           this.forceUpdate();
         }
@@ -78,9 +76,13 @@ function createAnimatedComponent(Component: any): any {
         <Component
           {...other}
           style={ApplyAnimatedValues.transformStyles(style)}
-          ref={refName}
+          ref={node => { this.componentRef = node; }}
         />
       );
+    }
+    
+    getNode() {
+      return this.componentRef;
     }
   }
   AnimatedComponent.propTypes = {
