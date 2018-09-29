@@ -58,3 +58,34 @@ Animated.inject.FlattenStyle(
     : styles
 );
 ```
+
+## Sample Code
+Below is a simple example for using animated in React.
+
+```js
+import React from "react";
+import ReactDOM from "react-dom";
+import Animated from "animated/lib/targets/react-dom";
+
+class App extends React.Component {
+  state = { anim: new Animated.Value(0) };
+  click = () => this.setState({ anim: 100 });
+
+  render() {
+    return (
+      <div className="App">
+        <Animated.div
+          className="box"
+          style={{ left: this.state.anim }}
+          onClick={this.click}
+        />
+      </div>
+    );
+  }
+}
+
+const rootElement = document.getElementById("root");
+ReactDOM.render(<App />, rootElement);
+
+```
+The above code will move the `div` element with the class of `box` by `100px` when clicked.
