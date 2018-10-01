@@ -60,7 +60,7 @@ Animated.inject.FlattenStyle(
 ```
 
 ## Sample Code
-Below is a simple example for using animated in React.
+Below are simple examples for using animated in React.
 
 ```js
 import React from "react";
@@ -74,7 +74,7 @@ class App extends React.Component {
       toValue: 100, 
       duration: 500 
     }).start();
-  }
+  };
 
   render() {
     return (
@@ -94,3 +94,35 @@ ReactDOM.render(<App />, rootElement);
 
 ```
 The above code will move the `div` element with the class of `box` by `100px` when clicked.
+
+```js
+import React from "react";
+import ReactDOM from "react-dom";
+import Animated from "animated/lib/targets/react-dom";
+
+class App extends React.Component {
+  state = { anim: new Animated.Value(1) };
+  handleMouseDown = () =>
+    Animated.timing(this.state.anim, { toValue: 0.5 }).start();
+  handleMouseUp = () =>
+    Animated.timing(this.state.anim, { toValue: 1 }).start();
+
+  render() {
+    return (
+      <div className="App">
+        <Animated.div
+          className="box"
+          style={{ transform: [{ scale: this.state.anim }] }}
+          onMouseDown={this.handleMouseDown}
+          onMouseUp={this.handleMouseUp}
+        />
+      </div>
+    );
+  }
+}
+
+const rootElement = document.getElementById("root");
+ReactDOM.render(<App />, rootElement);
+
+```
+The above code will scale the `div` element with the class of `box` by in and then out when pressed.
