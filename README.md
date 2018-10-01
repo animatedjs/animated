@@ -69,7 +69,12 @@ import Animated from "animated/lib/targets/react-dom";
 
 class App extends React.Component {
   state = { anim: new Animated.Value(0) };
-  click = () => this.setState({ anim: 100 });
+  click = () => {
+    Animated.timing(this.state.anim, { 
+      toValue: 100, 
+      duration: 500 
+    }).start();
+  }
 
   render() {
     return (
