@@ -172,7 +172,7 @@ function colorToRgba(input: string): string {
   return `rgba(${r}, ${g}, ${b}, ${a})`;
 }
 
-var stringShapeRegex = /[0-9\.-]+/g;
+var stringShapeRegex = /([0-9]\d*)(?:\.\d*)?(?:[eE][+\-]?\d+)?/g;
 
 /**
  * Supports string shapes by extracting numbers so new values can be computed,
