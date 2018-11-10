@@ -7,33 +7,40 @@
  *
  * @flow
  */
-'use strict';
+"use strict";
 
-var React = require('react');
-var AnimatedProps = require('./AnimatedProps');
-var ApplyAnimatedValues = require('./injectable/ApplyAnimatedValues');
+var React = require("react");
+var AnimatedProps = require("./AnimatedProps");
+var ApplyAnimatedValues = require("./injectable/ApplyAnimatedValues");
+
+const {
+  useState,
+  useRef,
+  useCallback,
+  useEffect,
+  forwardRef,
+  useImperativeMethods,
+} = React;
 
 function createAnimatedComponent(Component: any): any {
-  class AnimatedComponent extends React.Component {
-    _propsAnimated: AnimatedProps;
+  const AnimatedComponent = forwardRef((props, ref) => {
+    const isMountedRef = useRef(true);
+    const propsAnimatedRef = useRef(null);
+    const componentRef = useRef(null);
+    const forceUpdate = useState(null)[1];
 
-    componentWillUnmount() {
-      this._propsAnimated && this._propsAnimated.__detach();
-    }
-
-    setNativeProps(props) {
-      var didUpdate = ApplyAnimatedValues.current(this.componentRef, props, this);
+    const setNativeProps = useCallback(props => {
+      const didUpdate = ApplyAnimatedValues.current(
+        componentRef.current,
+        props
+      );
       if (didUpdate === false) {
-        this.forceUpdate();
+        isMountedRef.current && forceUpdate();
       }
-    }
+    }, []);
 
-    componentWillMount() {
-      this.attachProps(this.props);
-    }
-
-    attachProps(nextProps) {
-      var oldPropsAnimated = this._propsAnimated;
+    const attachProps = useCallback(nextProps => {
+      let oldPropsAnimated = propsAnimatedRef.current;
 
       // The system is best designed when setNativeProps is implemented. It is
       // able to avoid re-rendering and directly set the attributes that
@@ -41,17 +48,11 @@ function createAnimatedComponent(Component: any): any {
       // native components. If you want to animate a composite component, you
       // need to re-render it. In this case, we have a fallback that uses
       // forceUpdate.
-      var callback = () => {
-        var didUpdate = ApplyAnimatedValues.current(this.componentRef, this._propsAnimated.__getAnimatedValue(), this);
-        if (didUpdate === false) {
-          this.forceUpdate();
-        }
+      const callback = () => {
+        setNativeProps(propsAnimatedRef.current.__getAnimatedValue());
       };
 
-      this._propsAnimated = new AnimatedProps(
-        nextProps,
-        callback,
-      );
+      propsAnimatedRef.current = new AnimatedProps(nextProps, callback);
 
       // When you call detach, it removes the element from the parent list
       // of children. If it goes to 0, then the parent also detaches itself
@@ -62,28 +63,39 @@ function createAnimatedComponent(Component: any): any {
       // this expensive recursive detaching to then re-attach everything on
       // the very next operation.
       oldPropsAnimated && oldPropsAnimated.__detach();
-    }
+    }, []);
 
-    componentWillReceiveProps(nextProps) {
-      this.attachProps(nextProps);
-    }
+    attachProps(props);
 
-    render() {
-      const { style, ...other} = this._propsAnimated.__getValue();
+    // componentWillUnmount-ish
+    useEffect(
+      () => () => {
+        isMountedRef.current = false;
+        propsAnimatedRef.current && propsAnimatedRef.current.__detach();
+      },
+      []
+    );
 
-      return (
-        <Component
-          {...other}
-          style={ApplyAnimatedValues.transformStyles(style)}
-          ref={node => { this.componentRef = node; }}
-        />
-      );
-    }
-    
-    getNode() {
-      return this.componentRef;
-    }
-  }
+    useImperativeMethods(
+      ref,
+      () => ({
+        setNativeProps,
+        getNode: () => componentRef.current,
+      }),
+      []
+    );
+
+    const { style, ...other } = propsAnimatedRef.current.__getValue();
+
+    return (
+      <Component
+        {...other}
+        style={ApplyAnimatedValues.transformStyles(style)}
+        ref={componentRef}
+      />
+    );
+  });
+
   AnimatedComponent.propTypes = {
     style: function(props, propName, componentName) {
       if (!Component.propTypes) {
@@ -103,7 +115,7 @@ function createAnimatedComponent(Component: any): any {
       //     );
       //   }
       // }
-    }
+    },
   };
 
   return AnimatedComponent;

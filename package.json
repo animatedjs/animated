@@ -46,7 +46,7 @@
     "babel-preset-react-native": "^1.4.0",
     "browserify": "^13.0.0",
     "create-react-class": "^15.6.3",
-    "react": "^16.2.0",
-    "react-dom": "^16.2.0"
+    "react": "^16.7.0-alpha.0",
+    "react-dom": "^16.7.0-alpha.0"
   }
 }
